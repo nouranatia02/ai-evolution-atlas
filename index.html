@@ -25,6 +25,21 @@
       --right-visibility: 1;
     }
 
+    body.dark-theme {
+      --bg: #0f1720;
+      --panel: rgba(18, 28, 36, 0.9);
+      --panel-strong: rgba(16, 24, 31, 0.98);
+      --ink: #e8f1ef;
+      --muted: #9db0b2;
+      --line: rgba(164, 193, 197, 0.2);
+      --accent: #58c2b8;
+      --accent-2: #89b4ff;
+      --accent-3: #e1b566;
+      --shadow: 0 1.5rem 3rem rgba(2, 8, 12, 0.32);
+      --node: #163039;
+      --node-active: #214753;
+    }
+
     * { box-sizing: border-box; }
 
     body {
@@ -37,6 +52,13 @@
         linear-gradient(135deg, #edf3f1 0%, #e7efed 48%, #f6f9f8 100%);
       min-height: 100vh;
       overflow: auto;
+    }
+
+    body.dark-theme {
+      background:
+        radial-gradient(circle at top left, rgba(88, 194, 184, 0.12), transparent 22%),
+        radial-gradient(circle at 86% 10%, rgba(137, 180, 255, 0.12), transparent 20%),
+        linear-gradient(135deg, #0f1720 0%, #111c25 48%, #14212b 100%);
     }
 
     .page {
@@ -68,6 +90,11 @@
       backdrop-filter: blur(1rem);
     }
 
+    body.dark-theme .top-ribbon {
+      background: rgba(14, 22, 30, 0.82);
+      border-color: rgba(157, 176, 178, 0.12);
+    }
+
     .ribbon-tabs,
     .ribbon-actions {
       display: flex;
@@ -89,6 +116,11 @@
       transition: transform 150ms ease, background 150ms ease, color 150ms ease;
     }
 
+    body.dark-theme .ribbon-tab,
+    body.dark-theme .panel-toggle {
+      background: rgba(137, 180, 255, 0.12);
+    }
+
     .ribbon-tab.active {
       background: linear-gradient(135deg, rgba(15, 118, 110, 0.14), rgba(49, 92, 149, 0.16));
       color: var(--ink);
@@ -107,6 +139,12 @@
       box-shadow: var(--shadow);
       backdrop-filter: blur(1rem);
       min-width: 0;
+    }
+
+    body.dark-theme .panel,
+    body.dark-theme .map-panel,
+    body.dark-theme .info-panel {
+      border-color: rgba(157, 176, 178, 0.12);
     }
 
     .panel-inner {
@@ -227,9 +265,20 @@
       background: rgba(255, 251, 245, 0.9);
     }
 
+    body.dark-theme .search-box {
+      background: rgba(22, 34, 42, 0.92);
+      border-color: rgba(157, 176, 178, 0.16);
+      color: var(--ink);
+    }
+
     .search-box:focus {
       outline: 2px solid rgba(28, 106, 106, 0.22);
       border-color: rgba(28, 106, 106, 0.3);
+    }
+
+    body.dark-theme .search-box:focus {
+      outline-color: rgba(88, 194, 184, 0.25);
+      border-color: rgba(88, 194, 184, 0.35);
     }
 
     .search-hint {
@@ -281,6 +330,11 @@
       min-height: 4.6rem;
     }
 
+    body.dark-theme .ask-answer {
+      background: rgba(21, 33, 42, 0.82);
+      border: 1px solid rgba(157, 176, 178, 0.12);
+    }
+
     .ask-answer strong { color: var(--ink); }
 
     .ask-links {
@@ -298,6 +352,12 @@
       background: rgba(28, 106, 106, 0.1);
       color: var(--accent-2);
       cursor: pointer;
+    }
+
+    body.dark-theme .ask-links button,
+    body.dark-theme .topic-stack button {
+      background: rgba(88, 194, 184, 0.12);
+      color: var(--ink);
     }
 
     .topic-stack {
@@ -347,6 +407,14 @@
       border: 1px solid rgba(32, 24, 22, 0.08);
     }
 
+    body.dark-theme .map-shell {
+      background:
+        radial-gradient(circle at 15% 18%, rgba(88, 194, 184, 0.08), transparent 24%),
+        radial-gradient(circle at 84% 20%, rgba(137, 180, 255, 0.08), transparent 24%),
+        linear-gradient(180deg, rgba(15, 25, 33, 0.96), rgba(17, 30, 38, 0.98));
+      border-color: rgba(157, 176, 178, 0.12);
+    }
+
     .map-shell::before {
       content: "";
       position: absolute;
@@ -380,6 +448,13 @@
       cursor: pointer;
     }
 
+    body.dark-theme .map-toolbar button,
+    body.dark-theme .panel-collapse {
+      background: rgba(16, 28, 36, 0.9);
+      color: var(--ink);
+      box-shadow: 0 0.7rem 1.4rem rgba(2, 8, 12, 0.22);
+    }
+
     .map-readout {
       position: absolute;
       left: 1rem;
@@ -392,6 +467,11 @@
       color: var(--muted);
       font-size: 0.9rem;
       backdrop-filter: blur(0.8rem);
+    }
+
+    body.dark-theme .map-readout {
+      background: rgba(12, 20, 26, 0.82);
+      border-color: rgba(157, 176, 178, 0.14);
     }
 
     svg {
@@ -527,6 +607,12 @@
       padding: 0.9rem;
     }
 
+    body.dark-theme .card,
+    body.dark-theme .prompt-card {
+      background: rgba(21, 33, 42, 0.82);
+      border-color: rgba(157, 176, 178, 0.12);
+    }
+
     .card h3 { font-size: 0.95rem; margin-bottom: 0.4rem; }
     .card p, .card li { color: var(--muted); line-height: 1.55; font-size: 0.94rem; }
     .card ul { margin: 0; padding-left: 18px; }
@@ -547,6 +633,12 @@
     .related button:hover, .timeline button:hover, .related button:focus-visible, .timeline button:focus-visible {
       background: rgba(20, 108, 120, 0.18);
       transform: translateY(-1px);
+    }
+
+    body.dark-theme .related button,
+    body.dark-theme .timeline button {
+      background: rgba(88, 194, 184, 0.12);
+      color: var(--ink);
     }
 
     .timeline, .legend { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -658,6 +750,7 @@
         <button class="ribbon-tab" id="tab-prompting" type="button">Prompting Types</button>
       </div>
       <div class="ribbon-actions">
+        <button class="panel-toggle" id="toggle-theme" type="button">Dark Mode</button>
         <button class="panel-toggle" id="toggle-left" type="button">Toggle Left</button>
         <button class="panel-toggle" id="toggle-right" type="button">Toggle Right</button>
       </div>
@@ -845,6 +938,7 @@
     const zoomResetButton = document.getElementById("zoom-reset");
     const tabAi = document.getElementById("tab-ai");
     const tabPrompting = document.getElementById("tab-prompting");
+    const toggleTheme = document.getElementById("toggle-theme");
     const toggleLeft = document.getElementById("toggle-left");
     const toggleRight = document.getElementById("toggle-right");
     const collapseLeft = document.getElementById("collapse-left");
@@ -885,6 +979,17 @@
     let dragStart = { x: 0, y: 0, cameraX: 0, cameraY: 0 };
     let draggedNodeId = null;
     let nodeDragMoved = false;
+
+    function syncThemeButton() {
+      toggleTheme.textContent = document.body.classList.contains("dark-theme") ? "Light Mode" : "Dark Mode";
+    }
+
+    function applySavedTheme() {
+      const savedTheme = localStorage.getItem("ai-atlas-theme");
+      const useDark = savedTheme === "dark";
+      document.body.classList.toggle("dark-theme", useDark);
+      syncThemeButton();
+    }
 
     function clamp(value, min, max) {
       return Math.min(max, Math.max(min, value));
@@ -1429,6 +1534,12 @@
       askInput.value = "";
       askAnswer.textContent = "Ask something like \"how can I expand my resources when I don't have it locally?\" and the map will suggest the closest topic.";
     });
+    toggleTheme.addEventListener("click", () => {
+      const useDark = !document.body.classList.contains("dark-theme");
+      document.body.classList.toggle("dark-theme", useDark);
+      localStorage.setItem("ai-atlas-theme", useDark ? "dark" : "light");
+      syncThemeButton();
+    });
     zoomInButton.addEventListener("click", () => zoomBy(0.16));
     zoomOutButton.addEventListener("click", () => zoomBy(-0.16));
     zoomResetButton.addEventListener("click", () => selectTopic(selectedTopicId));
@@ -1438,6 +1549,7 @@
     toggleRight.addEventListener("click", () => togglePanel("right"));
     collapseLeft.addEventListener("click", () => togglePanel("left"));
     collapseRight.addEventListener("click", () => togglePanel("right"));
+    applySavedTheme();
     setMode("ai");
   </script>
 </body>
