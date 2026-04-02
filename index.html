@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Evolution Mindmap</title>
+  <style>
+    :root {
+      --bg: #edf3f1;
+      --panel: rgba(251, 253, 252, 0.88);
+      --panel-strong: rgba(246, 250, 249, 0.97);
+      --ink: #162126;
+      --muted: #5d6d71;
+      --line: rgba(36, 53, 58, 0.18);
+      --accent: #0f766e;
+      --accent-2: #315c95;
+      --accent-3: #c28a44;
+      --shadow: 0 1.5rem 3rem rgba(43, 70, 74, 0.14);
+      --node: #f9fffd;
+      --node-active: #dff5ef;
+      --left-panel: 21rem;
+      --right-panel: 24rem;
+      --splitter: 0.625rem;
+      --left-visibility: 1;
+      --right-visibility: 1;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.12), transparent 22%),
+        radial-gradient(circle at 86% 10%, rgba(49, 92, 149, 0.12), transparent 20%),
+        linear-gradient(135deg, #edf3f1 0%, #e7efed 48%, #f6f9f8 100%);
+      min-height: 100vh;
+      overflow: auto;
+    }
+
+    .page {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.875rem;
+      padding: 1rem;
+      min-height: 100vh;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.875rem;
+      min-height: calc(100vh - 5rem);
+    }
+
+    .top-ribbon {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.875rem;
+      padding: 0.85rem 1rem;
+      background: rgba(248, 252, 251, 0.82);
+      border: 1px solid rgba(22, 33, 38, 0.08);
+      border-radius: 1.35rem;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(1rem);
+    }
+
+    .ribbon-tabs,
+    .ribbon-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      flex-wrap: wrap;
+    }
+
+    .ribbon-tab,
+    .panel-toggle {
+      border: 0;
+      min-height: 2.75rem;
+      padding: 0.7rem 1rem;
+      border-radius: 999px;
+      font: inherit;
+      cursor: pointer;
+      background: rgba(49, 92, 149, 0.08);
+      color: var(--accent-2);
+      transition: transform 150ms ease, background 150ms ease, color 150ms ease;
+    }
+
+    .ribbon-tab.active {
+      background: linear-gradient(135deg, rgba(15, 118, 110, 0.14), rgba(49, 92, 149, 0.16));
+      color: var(--ink);
+    }
+
+    .panel-toggle:hover,
+    .ribbon-tab:hover {
+      transform: translateY(-0.0625rem);
+      background: rgba(15, 118, 110, 0.14);
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(32, 24, 22, 0.08);
+      border-radius: 1.6rem;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(1rem);
+      min-width: 0;
+    }
+
+    .panel-inner {
+      padding: 1rem;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      min-height: 0;
+    }
+
+    .left-panel .panel-inner,
+    .right-panel .panel-inner {
+      overflow: auto;
+    }
+
+    .map-panel {
+      position: relative;
+      overflow: hidden;
+      background: var(--panel);
+      border: 1px solid rgba(32, 24, 22, 0.08);
+      border-radius: 1.6rem;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(1rem);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.875rem;
+      min-width: 0;
+    }
+
+    .info-panel {
+      background: var(--panel);
+      border: 1px solid rgba(32, 24, 22, 0.08);
+      border-radius: 1.6rem;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(1rem);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      min-width: 0;
+      overflow: auto;
+    }
+
+    .map-layout {
+      display: grid;
+      grid-template-columns: minmax(18rem, var(--left-panel)) var(--splitter) minmax(28rem, 1fr);
+      gap: 0.875rem;
+      flex: 1;
+      min-height: 0;
+      align-items: stretch;
+    }
+
+    .left-rail {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      min-height: 0;
+      overflow: auto;
+    }
+
+    .map-canvas {
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .map-panel .panel-inner {
+      overflow: hidden;
+      gap: 0.875rem;
+    }
+
+    .eyebrow {
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-size: 0.74rem;
+      color: var(--accent-2);
+      margin-bottom: 0.35rem;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    h1 {
+      font-size: clamp(2rem, 2.8vw, 3.7rem);
+      line-height: 0.98;
+      max-width: 12ch;
+      font-weight: 600;
+    }
+
+    .lead {
+      font-size: 1rem;
+      line-height: 1.65;
+      color: var(--muted);
+      max-width: 62ch;
+    }
+
+    .instructions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.625rem;
+    }
+
+    .tag {
+      padding: 0.55rem 0.8rem;
+      border-radius: 999px;
+      background: rgba(28, 106, 106, 0.08);
+      color: var(--accent-2);
+      font-size: 0.92rem;
+    }
+
+    .search-box {
+      width: 100%;
+      border: 1px solid rgba(32, 24, 22, 0.12);
+      border-radius: 1rem;
+      padding: 0.85rem 1rem;
+      font: inherit;
+      color: var(--ink);
+      background: rgba(255, 251, 245, 0.9);
+    }
+
+    .search-box:focus {
+      outline: 2px solid rgba(28, 106, 106, 0.22);
+      border-color: rgba(28, 106, 106, 0.3);
+    }
+
+    .search-hint {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .ask-panel {
+      border: 1px solid rgba(32, 24, 22, 0.08);
+      border-radius: 1.25rem;
+      background:
+        linear-gradient(180deg, rgba(246, 250, 249, 0.98), rgba(235, 245, 243, 0.92)),
+        radial-gradient(circle at top right, rgba(15, 118, 110, 0.08), transparent 35%);
+      padding: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .ask-actions { display: flex; gap: 0.5rem; }
+
+    .ask-button {
+      border: 0;
+      border-radius: 0.85rem;
+      padding: 0.72rem 0.9rem;
+      font: inherit;
+      background: linear-gradient(135deg, #0f766e, #315c95);
+      color: #fffaf3;
+      cursor: pointer;
+    }
+
+    .ask-clear {
+      border: 0;
+      border-radius: 0.85rem;
+      padding: 0.72rem 0.9rem;
+      font: inherit;
+      background: rgba(28, 106, 106, 0.1);
+      color: var(--accent-2);
+      cursor: pointer;
+    }
+
+    .ask-answer {
+      border-radius: 1rem;
+      background: rgba(255, 255, 255, 0.72);
+      padding: 0.85rem;
+      color: var(--muted);
+      line-height: 1.55;
+      min-height: 4.6rem;
+    }
+
+    .ask-answer strong { color: var(--ink); }
+
+    .ask-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.7rem;
+    }
+
+    .ask-links button {
+      border: 0;
+      border-radius: 999px;
+      padding: 0.5rem 0.8rem;
+      font: inherit;
+      background: rgba(28, 106, 106, 0.1);
+      color: var(--accent-2);
+      cursor: pointer;
+    }
+
+    .topic-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      overflow: auto;
+      padding-right: 0.25rem;
+    }
+
+    .topic-stack button {
+      text-align: left;
+      border: 0;
+      border-radius: 1rem;
+      padding: 0.8rem 0.9rem;
+      font: inherit;
+      background: rgba(28, 106, 106, 0.08);
+      color: var(--ink);
+      cursor: pointer;
+      transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .topic-stack button:hover,
+    .topic-stack button:focus-visible,
+    .topic-stack button.active {
+      background: rgba(15, 118, 110, 0.14);
+      transform: translateY(-0.125rem);
+      box-shadow: 0 0.8rem 1.3rem rgba(15, 118, 110, 0.08);
+    }
+
+    .topic-stack small {
+      display: block;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    .map-shell {
+      position: relative;
+      flex: 1;
+      min-height: 28rem;
+      border-radius: 1.4rem;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.08), transparent 28%),
+        radial-gradient(circle at 85% 20%, rgba(49, 92, 149, 0.08), transparent 25%),
+        linear-gradient(135deg, rgba(249, 253, 252, 0.96), rgba(239, 246, 245, 0.92));
+      border: 1px solid rgba(32, 24, 22, 0.08);
+    }
+
+    .map-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(32, 24, 22, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(32, 24, 22, 0.03) 1px, transparent 1px);
+      background-size: 2.5rem 2.5rem;
+      pointer-events: none;
+      mask-image: radial-gradient(circle at center, black 45%, transparent 88%);
+    }
+
+    .map-toolbar {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 2;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .map-toolbar button {
+      border: 0;
+      min-width: 2.8rem;
+      min-height: 2.8rem;
+      border-radius: 999px;
+      background: rgba(255, 250, 241, 0.92);
+      color: var(--ink);
+      font: inherit;
+      box-shadow: 0 0.7rem 1.4rem rgba(32, 24, 22, 0.12);
+      cursor: pointer;
+    }
+
+    .map-readout {
+      position: absolute;
+      left: 1rem;
+      bottom: 1rem;
+      z-index: 2;
+      padding: 0.7rem 0.9rem;
+      border-radius: 999px;
+      background: rgba(255, 248, 237, 0.82);
+      border: 1px solid rgba(32, 24, 22, 0.08);
+      color: var(--muted);
+      font-size: 0.9rem;
+      backdrop-filter: blur(0.8rem);
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    svg.dragging { cursor: grabbing; }
+
+    .prompt-hub {
+      display: none;
+      height: 100%;
+      overflow: auto;
+      padding: 1rem;
+    }
+
+    .prompt-hub.active {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+      gap: 0.875rem;
+      align-content: start;
+    }
+
+    .prompt-card {
+      border: 1px solid rgba(22, 33, 38, 0.08);
+      border-radius: 1.2rem;
+      background: rgba(252, 255, 254, 0.84);
+      padding: 1rem;
+      cursor: pointer;
+      transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+    }
+
+    .prompt-card:hover,
+    .prompt-card.active {
+      transform: translateY(-0.125rem);
+      border-color: rgba(15, 118, 110, 0.28);
+      box-shadow: 0 1rem 1.8rem rgba(15, 118, 110, 0.08);
+    }
+
+    .prompt-card h3 {
+      margin-bottom: 0.45rem;
+      font-size: 1.05rem;
+    }
+
+    .prompt-card p {
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 0.94rem;
+    }
+
+    .link {
+      stroke: var(--line);
+      stroke-width: 2.1;
+      fill: none;
+      transition: stroke 220ms ease, stroke-width 220ms ease, opacity 220ms ease;
+      opacity: 0.34;
+    }
+
+    .link.active {
+      stroke: var(--accent);
+      stroke-width: 4.4;
+      opacity: 1;
+      filter: drop-shadow(0 0 0.55rem rgba(15, 118, 110, 0.24));
+    }
+
+    .node { cursor: pointer; }
+
+    .node circle {
+      fill: var(--node);
+      stroke: rgba(32, 24, 22, 0.12);
+      stroke-width: 2;
+      transition: transform 220ms ease, fill 220ms ease, stroke 220ms ease, filter 220ms ease;
+      transform-box: fill-box;
+      transform-origin: center;
+      filter: drop-shadow(0 0.8rem 1.3rem rgba(60, 34, 13, 0.12));
+    }
+
+    .node text {
+      font-family: "Palatino Linotype", Georgia, serif;
+      font-size: 15px;
+      fill: var(--ink);
+      pointer-events: none;
+    }
+
+    .node:hover circle,
+    .node:focus-visible circle,
+    .node.active circle {
+      fill: var(--node-active);
+      stroke: var(--accent);
+      transform: scale(1.08);
+      filter: drop-shadow(0 1rem 1.8rem rgba(15, 118, 110, 0.18));
+    }
+
+    .node.active text { fill: #2f160b; }
+    .node.small text { font-size: 13px; }
+
+    .map-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at center, transparent 42%, rgba(237, 243, 241, 0.18) 100%);
+    }
+
+    .title-row {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .pill {
+      align-self: start;
+      background: rgba(49, 92, 149, 0.12);
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.84rem;
+      white-space: nowrap;
+    }
+
+    .detail-copy { line-height: 1.75; color: var(--muted); font-size: 1rem; }
+    .detail-copy strong { color: var(--ink); }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
+
+    .card {
+      border: 1px solid rgba(32, 24, 22, 0.08);
+      border-radius: 1.15rem;
+      background: rgba(255, 255, 255, 0.62);
+      padding: 0.9rem;
+    }
+
+    .card h3 { font-size: 0.95rem; margin-bottom: 0.4rem; }
+    .card p, .card li { color: var(--muted); line-height: 1.55; font-size: 0.94rem; }
+    .card ul { margin: 0; padding-left: 18px; }
+    .related { display: flex; flex-wrap: wrap; gap: 10px; }
+
+    .related button, .timeline button {
+      border: 0;
+      border-radius: 999px;
+      min-height: 2.75rem;
+      padding: 0.68rem 0.95rem;
+      font: inherit;
+      background: rgba(28, 106, 106, 0.1);
+      color: var(--accent-2);
+      cursor: pointer;
+      transition: transform 150ms ease, background 150ms ease;
+    }
+
+    .related button:hover, .timeline button:hover, .related button:focus-visible, .timeline button:focus-visible {
+      background: rgba(20, 108, 120, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .timeline, .legend { display: flex; flex-wrap: wrap; gap: 10px; }
+    .legend { color: var(--muted); font-size: 0.92rem; }
+    .legend span { padding: 8px 10px; border-radius: 999px; background: rgba(217, 164, 65, 0.12); }
+
+    .splitter {
+      display: none;
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(15, 118, 110, 0.12), rgba(49, 92, 149, 0.12));
+      position: relative;
+    }
+
+    .splitter::before {
+      content: "";
+      position: absolute;
+      inset: 0.5rem 0.15rem;
+      border-radius: inherit;
+      background: rgba(255, 255, 255, 0.42);
+    }
+
+    .splitter:hover { cursor: col-resize; }
+
+    .panel-collapse {
+      border: 0;
+      min-height: 2.5rem;
+      min-width: 2.5rem;
+      border-radius: 999px;
+      background: rgba(49, 92, 149, 0.08);
+      color: var(--accent-2);
+      font: inherit;
+      cursor: pointer;
+      align-self: flex-start;
+    }
+
+    .left-rail.minimized > :not(.panel-collapse),
+    .info-panel.minimized > :not(.panel-collapse) {
+      display: none;
+    }
+
+    .info-panel.minimized {
+      padding: 0.5rem;
+      overflow: hidden;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    @media (min-width: 1024px) {
+      .page {
+        padding: 1.1rem;
+        grid-template-columns: minmax(calc(52rem * var(--left-visibility)), 1fr) var(--splitter) minmax(calc(20rem * var(--right-visibility)), var(--right-panel));
+        gap: 0.9rem;
+      }
+
+      .splitter {
+        display: block;
+        width: var(--splitter);
+      }
+
+      .map-panel,
+      .info-panel {
+        min-height: calc(100vh - 2.2rem);
+      }
+
+      .page.left-collapsed {
+        --left-visibility: 0.28;
+      }
+
+      .page.right-collapsed {
+        --right-visibility: 0.2;
+      }
+
+      .page.left-collapsed .map-layout {
+        grid-template-columns: 3.25rem var(--splitter) minmax(28rem, 1fr);
+      }
+
+      .page.right-collapsed {
+        grid-template-columns: minmax(52rem, 1fr) var(--splitter) 3.25rem;
+      }
+
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 1023px) {
+      body { overflow: auto; }
+      .page { padding: 0.9rem; }
+      .page-splitter,
+      .map-splitter { display: none; }
+      .map-shell { min-height: 32rem; }
+      .map-layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      .page { padding: 0.75rem; }
+      .map-panel, .info-panel { border-radius: 1.2rem; }
+      .lead { font-size: 0.97rem; }
+      .map-shell { min-height: 26rem; }
+      .node text { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="top-ribbon">
+      <div class="ribbon-tabs">
+        <button class="ribbon-tab active" id="tab-ai" type="button">AI Atlas</button>
+        <button class="ribbon-tab" id="tab-prompting" type="button">Prompting Types</button>
+      </div>
+      <div class="ribbon-actions">
+        <button class="panel-toggle" id="toggle-left" type="button">Toggle Left</button>
+        <button class="panel-toggle" id="toggle-right" type="button">Toggle Right</button>
+      </div>
+    </div>
+    <section class="map-panel">
+      <div class="eyebrow">Interactive AI Story</div>
+      <h1>Clickable Mindmap of AI History and Ideas</h1>
+      <p class="lead">
+        This map connects the early questions about machine intelligence to symbolic AI,
+        machine learning, neural networks, transformers, and modern GPT-style models.
+        Click any topic to see what it means and how it links to the rest.
+      </p>
+      <div class="instructions">
+        <span class="tag">Click a node</span>
+        <span class="tag">Use related-topic buttons</span>
+        <span class="tag">Follow the historical flow</span>
+      </div>
+      <div class="map-layout">
+        <div class="left-rail">
+          <button class="panel-collapse" id="collapse-left" type="button" aria-label="Minimize left panel">-</button>
+          <div class="ask-panel">
+            <div class="eyebrow">Ask The Map</div>
+            <input id="ask-input" class="search-box" type="text" placeholder="Ask in plain language..." />
+            <div class="ask-actions">
+              <button id="ask-button" class="ask-button" type="button">Ask</button>
+              <button id="ask-clear" class="ask-clear" type="button">Clear</button>
+            </div>
+            <div class="ask-answer" id="ask-answer">
+              Ask something like "how can I expand my resources when I don't have it locally?" and the map will suggest the closest topic.
+            </div>
+          </div>
+          <div>
+            <div class="eyebrow">Search Topics</div>
+            <input id="topic-search" class="search-box" type="search" placeholder="Search ideas, tools, or use cases..." />
+            <p class="search-hint" id="search-hint">
+              Search across all topic content. For example, searching `Runpod` can bring you to the topic where it is discussed.
+            </p>
+          </div>
+          <div>
+            <div class="eyebrow">Topic Stack</div>
+            <div class="topic-stack" id="topic-stack"></div>
+          </div>
+        </div>
+        <div class="splitter map-splitter" id="map-splitter" aria-hidden="true"></div>
+        <div class="map-canvas">
+          <div class="map-shell" id="map-shell">
+            <div class="map-toolbar">
+              <button id="zoom-in" type="button" aria-label="Zoom in">+</button>
+              <button id="zoom-out" type="button" aria-label="Zoom out">-</button>
+              <button id="zoom-reset" type="button" aria-label="Reset view">Reset</button>
+            </div>
+            <div class="map-readout" id="map-readout">Overview focus - 100%</div>
+            <div class="map-overlay"></div>
+            <svg id="mindmap-svg" viewBox="0 0 1100 820" aria-label="AI history mindmap">
+              <g id="camera"></g>
+            </svg>
+          </div>
+          <div class="prompt-hub" id="prompt-hub"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="splitter page-splitter" id="page-splitter" aria-hidden="true"></div>
+
+    <aside class="info-panel">
+      <button class="panel-collapse" id="collapse-right" type="button" aria-label="Minimize right panel">-</button>
+      <div class="title-row">
+        <div>
+          <div class="eyebrow">Topic Detail</div>
+          <h2 id="detail-title">Artificial Intelligence</h2>
+        </div>
+        <div class="pill" id="detail-era">Overview</div>
+      </div>
+
+      <p class="detail-copy" id="detail-summary">
+        Select a topic in the map to explore how AI moved from philosophical questions
+        and rule-based systems toward machine learning, neural networks, transformers,
+        and modern generative models.
+      </p>
+
+      <div class="grid">
+        <div class="card">
+          <h3>Core Idea</h3>
+          <p id="detail-core">A connected view of the major ideas, people, and breakthroughs in AI.</p>
+        </div>
+        <div class="card">
+          <h3>Why It Matters</h3>
+          <p id="detail-importance">Each node explains one turning point in the path toward current AI systems.</p>
+        </div>
+        <div class="card">
+          <h3>Interactive Note</h3>
+          <p id="detail-interactive">Try jumping across related topics to compare symbolic AI, neural models, and transformers.</p>
+        </div>
+        <div class="card">
+          <h3>Keywords</h3>
+          <ul id="detail-points">
+            <li>History</li>
+            <li>Methods</li>
+            <li>Architectures</li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <div class="eyebrow">Related Topics</div>
+        <div class="related" id="related-topics"></div>
+      </div>
+
+          <div>
+            <div class="eyebrow">Suggested Path</div>
+            <div class="timeline" id="timeline-nav"></div>
+          </div>
+
+          <div>
+            <div class="eyebrow">Resources</div>
+            <div class="related" id="topic-resources"></div>
+          </div>
+
+          <div class="legend">
+            <span>Symbolic AI</span>
+            <span>Machine Learning</span>
+            <span>Neural Networks</span>
+        <span>Transformer Era</span>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    const topics = {
+      overview: { title: "Artificial Intelligence", era: "Overview", x: 550, y: 390, r: 56, summary: "AI is the broad effort to build machines that can perform tasks requiring reasoning, pattern recognition, language use, decision making, or learning. The story starts with a question: can machines think? It then branches into symbolic approaches, statistical learning, neural networks, and transformer-based language models.", core: "A single field with several waves: symbolic reasoning, learning from data, deep neural networks, and generative transformers.", importance: "This center node helps frame all the other topics as connected steps rather than isolated inventions.", interactive: "Start from history, jump to methods, then compare how encoder-only, decoder-only, and encoder-decoder transformers differ.", points: ["History of ideas", "Competing approaches", "Modern foundation models"], related: ["turing", "mccarthy", "expert", "ml", "transformer"], answerStem: "This is the broad umbrella topic. Your question is probably answered more precisely by one of the connected subtopics." },
+      turing: { title: "A. M. Turing (1950)", era: "Foundations", x: 180, y: 120, r: 44, summary: "In 'Computing Machinery and Intelligence', Alan Turing reframed the vague question 'Can machines think?' into an operational test. Instead of defining thought directly, he proposed judging whether a machine's conversation could be indistinguishable from a human's.", core: "Turing turned philosophy into a testable question about behavior.", importance: "This set the tone for AI as a field concerned with intelligent behavior, especially language and conversation.", interactive: "Compare Turing's imitation-game idea to ELIZA and then to GPT. One asks whether the machine appears intelligent; the others try to produce that appearance.", points: ["Imitation game", "Machine intelligence", "Conversation as evidence"], related: ["eliza", "mccarthy", "gpt"], resources: [{ label: "Turing Paper (PDF)", url: "https://www.hec.edu/sites/default/files/documents/Computing%20Machinery%20and%20Intelligence%20by%20Alan%20Turing.pdf" }] },
+      mccarthy: { title: "John McCarthy", era: "Foundations", x: 300, y: 250, r: 38, summary: "John McCarthy was one of the central founders of AI and helped define it as a research field. He promoted the idea that intelligence could be described formally and implemented computationally.", core: "He helped establish AI as a named discipline rather than a loose collection of ideas.", importance: "McCarthy is strongly linked to symbolic AI, formal reasoning, and the early optimism that intelligence could be encoded with explicit representations and rules.", interactive: "Jump from McCarthy to expert systems to see how symbolic AI became practical software.", points: ["Named the field", "Formal reasoning", "Symbolic AI tradition"], related: ["expert", "turing", "eliza"], resources: [{ label: "John McCarthy Search", url: "https://www.google.com/search?sxsrf=ANbL-n5BNlveBHPYUqezPhEaCveWEnGNAQ:1775118581780&q=john+mccarthy" }] },
+      eliza: { title: "ELIZA Therapist", era: "Early NLP", x: 130, y: 300, r: 40, summary: "ELIZA simulated a therapist mainly by pattern matching and scripted responses. It did not understand language deeply, but it showed how easily people can attribute intelligence and empathy to conversational systems.", core: "Simple text rules can create a strong illusion of understanding.", importance: "ELIZA is an early example of conversational AI and a reminder that apparent intelligence is not the same as real understanding.", interactive: "Use this topic to contrast rule-based dialogue with transformer-based generation in GPT.", points: ["Pattern matching", "Scripted replies", "Illusion of understanding"], related: ["turing", "expert", "gpt"], resources: [{ label: "ELIZA Demo Page", url: "https://psych.fullerton.edu/mbirnbaum/psych101/eliza.htm" }] },
+      expert: { title: "Expert Systems", era: "Symbolic AI", x: 280, y: 430, r: 46, summary: "Expert systems tried to capture specialist knowledge as explicit rules: if this condition holds, then do that action. They worked well in narrow domains when knowledge could be written down clearly.", core: "Knowledge is hand-crafted as rules rather than learned from data.", importance: "They were a major success for symbolic AI, but they were hard to scale and maintain because real-world knowledge changes and becomes too complex to encode manually.", interactive: "Compare expert systems with machine learning: one relies on human-authored rules, the other learns patterns from examples.", points: ["Rule base", "Inference engine", "Brittle outside narrow domains"], related: ["mccarthy", "ml", "eliza"] },
+      ml: { title: "Machine Learning", era: "Data-Driven AI", x: 430, y: 560, r: 46, summary: "Machine learning shifts the strategy from hand-written rules to learning patterns from data. Instead of telling the machine every rule, we expose it to examples and let it adjust internal parameters.", core: "Systems improve by learning from examples rather than from manually specified logic.", importance: "This is the bridge from symbolic AI to neural networks and deep learning.", interactive: "Jump next to neural networks to see one powerful family of machine learning models.", points: ["Learn from data", "Generalize from examples", "Foundation of modern AI"], related: ["expert", "nn", "dl"] },
+      nn: { title: "Neural Networks", era: "Learning Models", x: 570, y: 640, r: 44, summary: "Neural networks are machine learning models made of layers of units whose weights are adjusted during training. They are inspired loosely by brain connectivity, but in practice they are mathematical function approximators.", core: "Learning means tuning many weights to map inputs to outputs.", importance: "They became the base architecture for deep learning and most current AI breakthroughs.", interactive: "Open deep learning next to see what changes when these networks become much larger and deeper.", points: ["Weighted connections", "Training by optimization", "Flexible function learning"], related: ["ml", "dl", "rnn"] },
+      dl: { title: "Deep Learning", era: "Modern Neural Era", x: 740, y: 650, r: 46, summary: "Deep learning refers to neural networks with many layers and enough scale to learn complex patterns from raw data such as images, text, and sound.", core: "Depth lets networks build increasingly abstract representations.", importance: "Deep learning drove the modern AI boom, especially after enough compute and data became available.", interactive: "Connect this to the AI big bang and AlexNet to see why deep learning suddenly became dominant.", points: ["Many layers", "Representation learning", "Scale matters"], related: ["nn", "imagenet", "alexnet"] },
+      imagenet: { title: "AI Big Bang: ImageNet", era: "Breakthrough Moment", x: 910, y: 560, r: 42, summary: "The ImageNet era was a turning point because it combined large labeled datasets with benchmark competition. It gave researchers a massive, shared target that made progress visible and comparable.", core: "Large accessible data made deep learning practical and measurable.", importance: "It helped trigger the dramatic leap in computer vision performance that convinced many researchers and companies to invest heavily in deep learning.", interactive: "Open AlexNet next to see the concrete model that made this moment famous.", points: ["Large-scale image dataset", "Benchmark competition", "Catalyst for adoption"], related: ["alexnet", "dl", "transformer"] },
+      alexnet: { title: "AlexNet", era: "Deep Learning Acceleration", x: 980, y: 390, r: 44, summary: "AlexNet showed that deep neural networks could beat previous approaches by a large margin on ImageNet. Three things made this possible: GPUs for much faster neural training than CPUs, large accessible datasets, and deep learning methods that could use both effectively.", core: "AlexNet proved that scale in compute, data, and model depth could change the field.", importance: "This breakthrough strongly accelerated industry and research adoption of deep learning.", interactive: "This is a great pivot node: it connects early neural ideas to the later transformer boom.", points: ["GPU training", "Data accessibility", "Practical deep learning success"], related: ["imagenet", "dl", "rnn"] },
+      rnn: { title: "RNN / Recurrent Neural Networks", era: "Sequence Learning", x: 850, y: 220, r: 46, summary: "RNNs process sequences word by word, carrying a hidden state forward through time. That makes them suitable for language and time-series tasks, but it also limits parallelism and causes long-range context problems such as vanishing memory.", core: "Sequence is processed step by step, with memory passed along.", importance: "RNNs were a major step in language modeling before transformers, but their limits created pressure for a better architecture.", interactive: "Compare RNNs with transformers: RNNs are sequential and memory-limited, while transformers use attention for parallel processing and stronger context handling.", points: ["Word-by-word processing", "Limited parallelism", "Vanishing memory/context limits"], related: ["attention", "nn", "alexnet"] },
+      attention: { title: "Attention Is All You Need", era: "Transformer Revolution", x: 680, y: 170, r: 48, summary: "Google's transformer paper replaced recurrence with self-attention. Instead of moving through words one at a time, the model can compare all tokens to one another in parallel and learn which parts of the sequence matter most.", core: "Attention lets each token weigh the relevance of other tokens directly.", importance: "This solved key RNN bottlenecks and opened the path to scalable large language models.", interactive: "Open self-attention and multi-head attention next to break the transformer into pieces.", points: ["Parallel sequence processing", "Context-aware relationships", "Scalable architecture"], related: ["rnn", "self", "multi", "transformer"], resources: [{ label: "arXiv Paper", url: "https://arxiv.org/abs/1706.03762" }, { label: "Wikipedia Overview", url: "https://en.wikipedia.org/wiki/Attention_Is_All_You_Need" }] },
+      self: { title: "Self-Attention, Query-Key-Value", era: "Transformer Mechanics", x: 520, y: 130, r: 42, summary: "In self-attention, each token creates a query, key, and value. The query asks what this token is looking for, keys represent what each other token offers, and values carry the content. The model computes importance scores between queries and keys, then mixes values accordingly.", core: "Tokens relate to one another by scoring importance and combining information.", importance: "This is the engine that helps transformers keep context without recurrence.", interactive: "Think of the query as the question, the key as the matching label, and the value as the information that gets retrieved.", points: ["Query", "Key", "Value", "Importance equation over token relations"], related: ["attention", "multi", "transformer"] },
+      multi: { title: "Multi-Head Attention", era: "Transformer Mechanics", x: 500, y: 270, r: 40, summary: "Instead of using one attention pattern, transformers use multiple heads in parallel. Different heads can specialize in different relationships, such as syntax, position, agreement, or semantic similarity. Early transformer examples often used 8 heads, while newer models may use many more, such as 32 or 64.", core: "Many attention heads let the model learn multiple relationship types at once.", importance: "This increases representational richness and makes transformer reasoning more flexible.", interactive: "Use this node with self-attention to understand why the transformer can track multiple patterns in the same sentence.", points: ["8 heads in classic examples", "32/64 heads in newer models", "Parallel relation patterns"], related: ["self", "attention", "transformer"] },
+      transformer: { title: "Transformer Tools", era: "Model Family", x: 630, y: 340, r: 52, summary: "Transformers are not just for Google Translate. They became the base architecture behind translation, summarization, search, question answering, coding assistants, and modern chatbots. The original form had an encoder and decoder, but later research showed each side could also be useful on its own.", core: "A general-purpose architecture for language and many other modalities.", importance: "This is the direct ancestor of BERT, T5, GPT, and most modern language models.", interactive: "Click the encoder-only, decoder-only, and T5 nodes to compare their directions and tasks.", points: ["Encoder + decoder origin", "Used beyond translation", "Base of modern LLMs"], related: ["encoder", "decoder", "t5", "attention"] },
+      encoder: { title: "Encoder Only: BERT", era: "Representation Models", x: 430, y: 390, r: 42, summary: "Encoder-only transformers like BERT read both left and right context, so they are bidirectional. They excel at understanding tasks rather than generation. A famous training objective is masked language modeling, where the model predicts missing words from surrounding context.", core: "Bidirectional context makes encoder models strong at understanding text.", importance: "These models became strong tools for sentiment analysis, classification, and information extraction.", interactive: "Compare BERT with GPT: BERT fills in or classifies, GPT continues and generates.", points: ["Bidirectional", "MLM", "Sentiment analysis and information extraction"], related: ["transformer", "decoder", "t5"] },
+      decoder: { title: "Decoder Only: GPT", era: "Generative Models", x: 690, y: 470, r: 44, summary: "Decoder-only transformers generate text by predicting the next token repeatedly. They are unidirectional during generation and are trained with causal language modeling, which means predicting future text from earlier text. This is an autoregressive process.", core: "Generation happens by next-token prediction, one step after another.", importance: "Decoder-only transformers dominate current large language models because they scale well for generative tasks.", interactive: "This is the clearest bridge from transformers to modern chat systems and generative AI.", points: ["Unidirectional generation", "Causal language modeling", "Autoregressive prediction"], related: ["gpt", "transformer", "encoder", "t5", "emergent"] },
+      t5: { title: "T5: Encoder + Decoder", era: "Text-to-Text", x: 520, y: 500, r: 40, summary: "T5 stands for Text-to-Text Transfer Transformer. It keeps both encoder and decoder, framing many NLP tasks in a single text-in, text-out style such as translation, summarization, and question answering.", core: "Different tasks are unified under one text-to-text format.", importance: "T5 shows how a single transformer design can handle many tasks by changing the prompt and output target.", interactive: "Compare T5 to BERT and GPT to see the tradeoff between understanding-focused and generation-focused designs.", points: ["Encoder-decoder", "Translation", "Summarization"], related: ["transformer", "encoder", "decoder"] },
+      gpt: { title: "GPT: Generative Pre-trained Transformer", era: "Current LLM Line", x: 820, y: 470, r: 50, summary: "GPT stands for Generative Pre-trained Transformer. It is based on the decoder-only transformer idea and learns broad language patterns during pretraining before being adapted for tasks like chat, writing, reasoning, and coding.", core: "Large-scale pretraining plus decoder-only generation creates a highly flexible language model.", importance: "GPT made the decoder-only transformer widely visible as a general-purpose interface for language tasks.", interactive: "Follow the path Turing -> ELIZA -> Transformer -> GPT to see the long arc from conversational imitation to generative conversation systems.", points: ["Generative", "Pre-trained", "Transformer", "Decoder-only in current practice"], related: ["decoder", "turing", "eliza", "llm", "emergent"] },
+      llm: { title: "LLM: Auto-Complete System", era: "Modern Usage", x: 980, y: 300, r: 42, summary: "A large language model can be understood as a very advanced auto-complete system. Given previous tokens, it predicts the most likely next token, then repeats this process again and again to generate full answers, stories, code, or explanations.", core: "LLMs generate by repeated next-token prediction over a large learned probability distribution.", importance: "This is the simplest practical explanation of how GPT-like systems work at inference time.", interactive: "Connect this topic to tokens, temperature, top-p randomness, and context window size to understand why the same prompt can produce different outputs.", points: ["Next-token prediction", "Autoregressive generation", "Inference-time sampling"], related: ["gpt", "decoder", "tokens", "temperature", "top_p", "context"], answerStem: "A good first lens is to think of an LLM as a next-token system. Once you know that, controls like tokens, temperature, top-p, and context windows become much easier to understand." },
+      tokens: { title: "Tokens as Building Blocks", era: "LLM Internals", x: 1010, y: 120, r: 40, summary: "LLMs do not read raw words exactly the way humans do. They work on tokens, which are chunks of text such as whole words, parts of words, punctuation, or special symbols. Tokens are the basic units that the model predicts and processes.", core: "Text is turned into token pieces, and generation happens one token at a time.", importance: "Understanding tokens helps explain model cost, speed, limits, and why prompts are measured in token counts.", interactive: "Compare this with the auto-complete idea: the model is not choosing the next sentence directly, it is choosing the next token step by step.", points: ["Subword pieces", "Tokenization", "Unit of prediction"], related: ["llm", "token_power", "context"], answerStem: "If your question is about prompt length, cost, or how the model reads text, tokens are the key concept. Models operate on token chunks, not directly on full human sentences." },
+      token_power: { title: "Tokens and Computational Power", era: "Scaling & Cost", x: 990, y: 760, r: 42, summary: "The number of tokens strongly affects computation, memory use, latency, and cost. More tokens mean more work for attention, more context to track, and more hardware demand during both training and generation.", core: "Token count is one of the main drivers of compute load in modern language models.", importance: "This explains why long prompts cost more, why context windows matter, and why scaling models requires serious computational resources.", interactive: "Use this together with context windows to understand why longer conversations are harder and more expensive for models to handle.", points: ["More tokens = more compute", "Higher memory demand", "Longer context costs more"], related: ["tokens", "context", "emergent"], answerStem: "When you ask about cost, slowness, or hardware pressure, token count is usually part of the answer. More tokens mean more computation and more memory demand." },
+      temperature: { title: "Temperature", era: "Sampling Control", x: 910, y: 40, r: 38, summary: "Temperature controls how sharply the model favors high-probability next tokens. Lower temperature usually makes output more focused and predictable, while higher temperature increases variety and risk-taking, which may reduce factual accuracy.", core: "Temperature changes how conservative or creative token selection becomes.", importance: "It is one of the most common controls used to balance accuracy, stability, and diversity in generated text.", interactive: "Compare low temperature for precise answers with higher temperature for brainstorming, creative writing, or varied phrasing.", points: ["Lower = more deterministic", "Higher = more random", "Affects accuracy and diversity"], related: ["llm", "top_p", "tokens"], answerStem: "If the question is about consistency versus creativity, temperature is the main control. Lower values make output steadier, while higher values allow more variation." },
+      top_p: { title: "Top-p and Randomness", era: "Sampling Control", x: 1080, y: 210, r: 36, summary: "Top-p, sometimes called nucleus sampling, limits token choice to the smallest set of tokens whose cumulative probability reaches a chosen threshold. This keeps randomness under control by sampling only from a probability mass considered plausible enough.", core: "Randomness is constrained to a probable set rather than the full vocabulary.", importance: "Top-p is often used with or instead of temperature to keep outputs diverse without becoming too erratic.", interactive: "Think of top-p as narrowing the menu before the model randomly picks the next token.", points: ["Nucleus sampling", "Probability cutoff", "Controlled randomness"], related: ["temperature", "llm", "tokens"], answerStem: "If you want to control randomness more carefully, top-p is a useful sampling tool. It narrows the candidate token pool before the model picks the next token." },
+      context: { title: "Context Windows", era: "Prompt Limits", x: 1080, y: 520, r: 40, summary: "The context window is the amount of text, measured in tokens, that the model can actively consider at once. It includes the prompt, system instructions, prior conversation, retrieved context, and often the generated answer itself.", core: "A model can only attend to a limited number of tokens at one time.", importance: "Context windows shape what the model can remember during a session and how much source material can be supplied in one prompt.", interactive: "Connect this with tokens and computational power to see why longer context is valuable but expensive.", points: ["Measured in tokens", "Defines active memory span", "Includes prompt and prior conversation"], related: ["llm", "tokens", "token_power", "compression", "emergent"], answerStem: "If your question is about memory during a conversation or long prompts, context windows are the core concept. They define how much text the model can actively keep in play at once." },
+      compression: { title: "Memory Context Window Compression", era: "Long Context Research", x: 930, y: 540, r: 40, summary: "Context window compression refers to techniques for fitting more useful information into limited model memory by summarizing, compressing, or selectively representing earlier content. Research directions associated with long-context optimization, including work from Google and others, aim to preserve important information while reducing the cost of attending to everything in full detail.", core: "Keep the most relevant meaning while reducing the effective memory burden.", importance: "This matters because context windows are valuable, but handling very long token sequences directly becomes expensive and difficult.", interactive: "Use this node after context windows to discuss how models may retain the important parts of long conversations without treating every earlier token equally.", points: ["Long-context efficiency", "Compression and summarization", "Preserve important information"], related: ["context", "token_power", "emergent"], answerStem: "If the challenge is keeping long conversations useful without exploding cost, compression is the idea to look at. It tries to preserve the important parts of memory while reducing what the model must actively handle." },
+      local_memory: { title: "Local AI Memory Overloading", era: "Running Models Locally", x: 1070, y: 680, r: 40, summary: "When running an AI model locally, VRAM on the GPU is often the main bottleneck. If the model or context does not fit in VRAM, some systems offload weights, cache, or intermediate state into system RAM. This makes local inference possible on weaker hardware, but it usually slows performance a lot compared with keeping everything in VRAM.", core: "When VRAM runs out, RAM can be used as overflow memory, trading speed for feasibility.", importance: "This explains why a model may technically run on a machine but still feel slow, especially with large models or long contexts.", interactive: "Connect this to tokens and computational power: larger models and longer prompts increase memory pressure, which can force more offloading to RAM.", points: ["VRAM bottleneck", "RAM offloading", "Feasible but slower local inference"], related: ["token_power", "context", "llm", "huggingface"], answerStem: "If you do not have enough local GPU memory, one option is offloading part of the model workload into RAM. That can let the model run locally, but it usually becomes much slower." },
+      openrouter: { title: "OpenRouter", era: "Model Access Layer", x: 900, y: 360, r: 36, summary: "OpenRouter is a platform that gives developers a unified way to access many different AI models through one API-style interface. Instead of integrating with each provider separately, developers can route requests across models and vendors from one place.", core: "One access layer can sit on top of many model providers.", importance: "It matters when comparing models, switching vendors, or building apps that need flexibility across multiple LLM backends.", interactive: "Connect this with GPT and LLMs to discuss the difference between a model itself and a service that routes you to many models.", points: ["Unified model access", "Multi-provider routing", "Developer-facing model selection"], related: ["llm", "gpt", "huggingface"], searchText: "API routing provider aggregator compare multiple models vendors model gateway", answerStem: "If you want one interface for many model providers, OpenRouter is the relevant ecosystem topic. It is about access and routing, not about the internal architecture of the model itself." },
+      huggingface: { title: "Hugging Face", era: "Model Ecosystem", x: 1090, y: 420, r: 38, summary: "Hugging Face is a major platform and ecosystem for sharing, discovering, downloading, and sometimes running machine learning and language models. It is especially important in open-source AI, where researchers and developers publish models, datasets, demos, and tooling.", core: "A central hub for open models, datasets, and AI tooling.", importance: "It connects the theory of transformers and LLMs to the practical world of model distribution, experimentation, and local use.", interactive: "Use this node to bridge from LLM ideas into real-world workflows like trying open models locally, using hosted notebooks, or moving to rented GPU platforms such as Runpod when local hardware is not enough.", points: ["Open model hub", "Datasets and tooling", "Important for local and open-source AI"], related: ["llm", "local_memory", "openrouter", "transformer"], searchText: "runpod runbod runpod.io rent resources rented GPUs cloud GPUs hosted inference spaces notebooks open source models download models", answerStem: "If you need more resources than your local machine can provide, the practical path often runs through the open-model ecosystem. Hugging Face connects naturally to hosted workflows and rented GPU services like Runpod when local hardware is not enough.", resources: [{ label: "Qwen GGUF on Hugging Face", url: "https://huggingface.co/Jackrong/Qwen3.5-9B-Claude-4.6-Opus-Reasoning-Distilled-v2-GGUF" }, { label: "Video Resource", url: "https://www.youtube.com/watch?v=l_n8VwBwXRs" }] },
+      emergent: { title: "Emergent Abilities", era: "Scale Effects", x: 930, y: 660, r: 42, summary: "Emergent abilities refer to capabilities that appear more clearly once models become large enough, such as stronger in-context learning, more flexible reasoning patterns, or better multi-step behavior. These abilities are often not obvious at smaller scales.", core: "Scale can produce qualitative changes, not just gradual improvement.", importance: "This idea helps explain why very large decoder-only models can do tasks they were not explicitly programmed for.", interactive: "Use this node after GPT to discuss why larger models may appear to gain new behaviors as heads, parameters, data, and training scale increase.", points: ["Scale effects", "In-context learning", "Unexpected capability jumps"], related: ["gpt", "decoder", "multi", "context", "compression", "token_power"] }
+    };
+
+    const links = [["overview", "turing"], ["overview", "mccarthy"], ["overview", "expert"], ["overview", "ml"], ["overview", "transformer"], ["turing", "eliza"], ["turing", "mccarthy"], ["turing", "gpt"], ["mccarthy", "expert"], ["eliza", "expert"], ["expert", "ml"], ["ml", "nn"], ["nn", "dl"], ["dl", "imagenet"], ["imagenet", "alexnet"], ["alexnet", "rnn"], ["rnn", "attention"], ["attention", "self"], ["attention", "multi"], ["attention", "transformer"], ["self", "multi"], ["transformer", "encoder"], ["transformer", "decoder"], ["transformer", "t5"], ["encoder", "t5"], ["decoder", "gpt"], ["gpt", "llm"], ["gpt", "openrouter"], ["llm", "tokens"], ["llm", "openrouter"], ["llm", "huggingface"], ["tokens", "token_power"], ["llm", "temperature"], ["llm", "top_p"], ["llm", "context"], ["temperature", "top_p"], ["context", "compression"], ["context", "token_power"], ["token_power", "local_memory"], ["context", "local_memory"], ["local_memory", "huggingface"], ["openrouter", "huggingface"], ["huggingface", "transformer"], ["decoder", "emergent"], ["gpt", "emergent"], ["context", "emergent"], ["compression", "emergent"]];
+    const timeline = ["turing", "mccarthy", "eliza", "expert", "ml", "nn", "dl", "imagenet", "alexnet", "rnn", "attention", "transformer", "encoder", "decoder", "t5", "gpt", "llm", "openrouter", "huggingface", "tokens", "temperature", "top_p", "context", "compression", "token_power", "local_memory", "emergent"];
+    const promptTopics = {
+      system_prompting: { title: "System Prompting", era: "Prompting Foundations", summary: "System prompting sets the high-level behavior, tone, constraints, and role of the model before the user request is handled. It is the main place to establish durable rules.", core: "Control the model's operating frame before the task begins.", importance: "Strong system prompts reduce drift and make later user prompts more reliable.", interactive: "Compare this with meta prompting and structured output prompting to see the difference between behavior setup and answer formatting.", points: ["Behavior framing", "Role and constraints", "Persistent instruction layer"], related: ["meta_prompting", "structured_output", "prompt_chaining"] },
+      chain_of_thought: { title: "Chain of Thought", era: "Reasoning Prompts", summary: "Chain of thought prompting encourages the model to break a problem into intermediate reasoning steps instead of jumping straight to the final answer.", core: "Ask for stepwise reasoning before the conclusion.", importance: "It often improves difficult reasoning tasks, especially when the task benefits from decomposition.", interactive: "Contrast this with self-consistency and tree of thoughts to see how reasoning can be sampled or branched.", points: ["Step-by-step reasoning", "Intermediate thoughts", "Improves complex problem solving"], related: ["model_explaining_cot", "self_consistency", "tree_of_thoughts", "prompt_chaining"] },
+      tree_of_thoughts: { title: "Tree of Thoughts", era: "Reasoning Prompts", summary: "Tree of thoughts expands reasoning into multiple possible branches instead of one linear chain. The model can explore alternatives, compare paths, and keep the better branch.", core: "Branch reasoning, then evaluate and continue from stronger paths.", importance: "This is useful for planning and search-like problems where one thought path may fail.", interactive: "Use this next to chain of thought to compare linear vs branching reasoning.", points: ["Branching reasoning", "Search over options", "Evaluate multiple paths"], related: ["chain_of_thought", "self_consistency", "meta_prompting"] },
+      self_consistency: { title: "Self-Consistency Prompting", era: "Reasoning Prompts", summary: "Self-consistency prompting samples multiple reasoning paths and then chooses the most consistent final answer across them.", core: "Generate multiple solutions, then prefer the most stable result.", importance: "It reduces the chance that one bad reasoning path dominates the final answer.", interactive: "Compare it with chain of thought: one gives a single reasoning path, the other samples several.", points: ["Multiple sampled chains", "Vote or agreement", "More robust final answers"], related: ["chain_of_thought", "tree_of_thoughts", "meta_prompting"] },
+      meta_prompting: { title: "Meta Prompting", era: "Prompt Design", summary: "Meta prompting asks the model to think about how it should answer before it answers. It is prompting about prompting.", core: "Use the model to improve or plan the prompt strategy itself.", importance: "This helps when you want the model to choose a method, structure, or role before solving the task.", interactive: "Compare this with system prompting: system prompting sets external rules, while meta prompting can make the model reflect on strategy internally.", points: ["Prompt about the prompt", "Strategy reflection", "Method selection"], related: ["system_prompting", "prompt_chaining", "structured_output"] },
+      prompt_chaining: { title: "Prompt Chaining", era: "Workflow Prompts", summary: "Prompt chaining breaks one large task into multiple smaller prompt steps, where the output of one step becomes the input to the next.", core: "Solve complex tasks through staged prompting.", importance: "This improves control, makes long workflows easier to debug, and often yields cleaner results than one giant prompt.", interactive: "Use this with structured output prompting to make each stage machine-readable.", points: ["Multi-step workflow", "Stage outputs", "Better control and debugging"], related: ["structured_output", "system_prompting", "chain_of_thought"] },
+      structured_output: { title: "Structured Output Prompting", era: "Formatting Prompts", summary: "Structured output prompting asks the model to return information in a predictable shape such as JSON, bullet schema, tables, or tagged sections.", core: "Make the answer easier for people or software to parse.", importance: "It is essential when prompt results feed another tool, script, or workflow step.", interactive: "Compare this with prompt chaining to see how formatting and workflow design complement each other.", points: ["JSON or schema output", "Reliable formatting", "Tool-friendly responses"], related: ["prompt_chaining", "system_prompting", "meta_prompting"] },
+      role_prompting: { title: "Role / Roll Prompting", era: "Behavior Prompts", summary: "Role prompting asks the model to act from a specific perspective such as teacher, reviewer, historian, or planner. If you wrote 'roll prompting', this is usually the concept people mean.", core: "Shape style and priorities by assigning a role.", importance: "This can sharpen tone, domain focus, and response structure without changing the main task itself.", interactive: "Compare it with system prompting: role prompting is often one instruction inside a broader system frame.", points: ["Assigned perspective", "Style control", "Task framing"], related: ["system_prompting", "meta_prompting", "rccf_prompting"] },
+      rccf_prompting: { title: "RCCF Prompting", era: "Prompt Frameworks", summary: "RCCF prompting uses a structured prompt framework to define role, content, context, and format clearly before the model answers.", core: "Give the model a full frame instead of a vague request.", importance: "Framework prompts are useful for beginners because they reduce ambiguity and make better prompting repeatable.", interactive: "Use this with role prompting and structured output prompting to build stronger template prompts.", points: ["Role", "Content", "Context", "Format"], related: ["role_prompting", "structured_output", "system_prompting"] },
+      model_explaining_cot: { title: "Model Explaining Chain of Thought", era: "Reasoning Prompts", summary: "This prompting style asks the model to explain the reasoning path itself, not just return the final answer. It can be used for teaching, transparency, and walkthrough-style explanations.", core: "Have the model expose or explain the reasoning path in a human-readable way.", importance: "It is useful for learning and debugging prompt behavior, even when the final answer is already known.", interactive: "Compare this with chain of thought: one uses internal stepwise reasoning, while this one emphasizes the explanation of that reasoning to the user.", points: ["Reasoning explanation", "Teaching and walkthroughs", "Transparent problem solving"], related: ["chain_of_thought", "meta_prompting", "self_consistency"] }
+    };
+    const promptTimeline = ["system_prompting", "role_prompting", "rccf_prompting", "structured_output", "prompt_chaining", "chain_of_thought", "model_explaining_cot", "self_consistency", "tree_of_thoughts", "meta_prompting"];
+
+    const workspace = document.querySelector(".page");
+    const svg = document.getElementById("mindmap-svg");
+    const camera = document.getElementById("camera");
+    const mapShell = document.getElementById("map-shell");
+    const mapReadout = document.getElementById("map-readout");
+    const zoomInButton = document.getElementById("zoom-in");
+    const zoomOutButton = document.getElementById("zoom-out");
+    const zoomResetButton = document.getElementById("zoom-reset");
+    const tabAi = document.getElementById("tab-ai");
+    const tabPrompting = document.getElementById("tab-prompting");
+    const toggleLeft = document.getElementById("toggle-left");
+    const toggleRight = document.getElementById("toggle-right");
+    const collapseLeft = document.getElementById("collapse-left");
+    const collapseRight = document.getElementById("collapse-right");
+    const mapSplitter = document.getElementById("map-splitter");
+    const pageSplitter = document.getElementById("page-splitter");
+    const detailTitle = document.getElementById("detail-title");
+    const detailEra = document.getElementById("detail-era");
+    const detailSummary = document.getElementById("detail-summary");
+    const detailCore = document.getElementById("detail-core");
+    const detailImportance = document.getElementById("detail-importance");
+    const detailInteractive = document.getElementById("detail-interactive");
+    const detailPoints = document.getElementById("detail-points");
+    const relatedTopics = document.getElementById("related-topics");
+    const timelineNav = document.getElementById("timeline-nav");
+    const topicResources = document.getElementById("topic-resources");
+    const topicSearch = document.getElementById("topic-search");
+    const topicStack = document.getElementById("topic-stack");
+    const searchHint = document.getElementById("search-hint");
+    const promptHub = document.getElementById("prompt-hub");
+    const leftRail = document.querySelector(".left-rail");
+    const infoPanel = document.querySelector(".info-panel");
+    const mapPanelTitle = document.querySelector(".map-panel h1");
+    const mapPanelLead = document.querySelector(".map-panel .lead");
+    const mapInstructions = document.querySelector(".instructions");
+    const askInput = document.getElementById("ask-input");
+    const askButton = document.getElementById("ask-button");
+    const askClear = document.getElementById("ask-clear");
+    const askAnswer = document.getElementById("ask-answer");
+    const linkEls = [];
+    const nodeEls = new Map();
+    const stackButtons = new Map();
+    let visibleTopicIds = Object.keys(topics);
+    let selectedTopicId = "overview";
+    let currentMode = "ai";
+    let cameraState = { scale: 1, x: 0, y: 0 };
+    let isDraggingMap = false;
+    let dragStart = { x: 0, y: 0, cameraX: 0, cameraY: 0 };
+    let draggedNodeId = null;
+    let nodeDragMoved = false;
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function applyCamera() {
+      camera.setAttribute("transform", `translate(${cameraState.x} ${cameraState.y}) scale(${cameraState.scale})`);
+      const source = currentMode === "ai" ? topics : promptTopics;
+      mapReadout.textContent = `${source[selectedTopicId]?.title || "Overview"} focus - ${Math.round(cameraState.scale * 100)}%`;
+    }
+
+    function centerOnTopic(id, scale = 1.55) {
+      const item = topics[id];
+      const targetScale = clamp(scale, 0.75, 2.8);
+      cameraState.scale = targetScale;
+      cameraState.x = 550 - item.x * targetScale;
+      cameraState.y = 410 - item.y * targetScale;
+      applyCamera();
+    }
+
+    function zoomBy(delta) {
+      cameraState.scale = clamp(cameraState.scale + delta, 0.75, 2.8);
+      applyCamera();
+    }
+
+    function resolveTopicCollisions() {
+      const movableIds = Object.keys(topics).filter((id) => id !== "overview");
+      const bounds = { minX: 20, maxX: 1800, minY: 20, maxY: 1200 };
+
+      for (let iteration = 0; iteration < 140; iteration += 1) {
+        let moved = false;
+
+        for (let i = 0; i < movableIds.length; i += 1) {
+          for (let j = i + 1; j < movableIds.length; j += 1) {
+            const a = topics[movableIds[i]];
+            const b = topics[movableIds[j]];
+            const dx = b.x - a.x;
+            const dy = b.y - a.y;
+            const distance = Math.hypot(dx, dy) || 0.001;
+            const minDistance = a.r + b.r + 24;
+
+            if (distance < minDistance) {
+              const overlap = (minDistance - distance) / 2;
+              const nx = dx / distance;
+              const ny = dy / distance;
+              a.x -= nx * overlap;
+              a.y -= ny * overlap;
+              b.x += nx * overlap;
+              b.y += ny * overlap;
+              a.x = clamp(a.x, bounds.minX, bounds.maxX);
+              a.y = clamp(a.y, bounds.minY, bounds.maxY);
+              b.x = clamp(b.x, bounds.minX, bounds.maxX);
+              b.y = clamp(b.y, bounds.minY, bounds.maxY);
+              moved = true;
+            }
+          }
+        }
+
+        if (!moved) break;
+      }
+
+      const ids = Object.keys(topics);
+      const avgX = ids.reduce((sum, id) => sum + topics[id].x, 0) / ids.length;
+      const avgY = ids.reduce((sum, id) => sum + topics[id].y, 0) / ids.length;
+      const shiftX = 550 - avgX;
+      const shiftY = 410 - avgY;
+
+      ids.forEach((id) => {
+        topics[id].x = clamp(topics[id].x + shiftX, bounds.minX, bounds.maxX);
+        topics[id].y = clamp(topics[id].y + shiftY, bounds.minY, bounds.maxY);
+      });
+    }
+
+    function addLink(fromId, toId) {
+      const from = topics[fromId];
+      const to = topics[toId];
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      updateLinkPath(path, fromId, toId);
+      path.setAttribute("class", "link");
+      path.dataset.from = fromId;
+      path.dataset.to = toId;
+      camera.appendChild(path);
+      linkEls.push(path);
+    }
+
+    function updateLinkPath(path, fromId, toId) {
+      const from = topics[fromId];
+      const to = topics[toId];
+      const midX = (from.x + to.x) / 2;
+      const midY = (from.y + to.y) / 2 + (from.y < to.y ? 24 : -24);
+      path.setAttribute("d", `M ${from.x} ${from.y} Q ${midX} ${midY} ${to.x} ${to.y}`);
+    }
+
+    function refreshLinksForNode(nodeId) {
+      linkEls.forEach((link) => {
+        if (link.dataset.from === nodeId || link.dataset.to === nodeId) {
+          updateLinkPath(link, link.dataset.from, link.dataset.to);
+        }
+      });
+    }
+
+    function wrapLabel(text, maxChars) {
+      const words = text.split(" ");
+      const lines = [];
+      let current = "";
+      for (const word of words) {
+        const next = current ? `${current} ${word}` : word;
+        if (next.length > maxChars && current) {
+          lines.push(current);
+          current = word;
+        } else {
+          current = next;
+        }
+      }
+      if (current) lines.push(current);
+      return lines.slice(0, 3);
+    }
+
+    function addNode(id, item) {
+      const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      group.setAttribute("class", `node ${item.r < 42 ? "small" : ""}`);
+      group.setAttribute("transform", `translate(${item.x}, ${item.y})`);
+      group.setAttribute("tabindex", "0");
+      group.setAttribute("role", "button");
+      group.setAttribute("aria-label", item.title);
+      group.dataset.id = id;
+
+      const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      circle.setAttribute("r", item.r);
+      group.appendChild(circle);
+
+      const lines = wrapLabel(item.title, item.r > 46 ? 16 : 14);
+      lines.forEach((line, index) => {
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("x", "0");
+        text.setAttribute("y", String(index * 18 - ((lines.length - 1) * 9)));
+        text.textContent = line;
+        group.appendChild(text);
+      });
+
+      group.addEventListener("pointerdown", (event) => {
+        if (currentMode !== "ai") return;
+        draggedNodeId = id;
+        nodeDragMoved = false;
+        group.setPointerCapture(event.pointerId);
+        event.stopPropagation();
+      });
+
+      group.addEventListener("pointermove", (event) => {
+        if (draggedNodeId !== id || currentMode !== "ai") return;
+        const point = svg.createSVGPoint();
+        point.x = event.clientX;
+        point.y = event.clientY;
+        const local = point.matrixTransform(svg.getScreenCTM().inverse());
+        topics[id].x = clamp((local.x - cameraState.x) / cameraState.scale, 20, 1080);
+        topics[id].y = clamp((local.y - cameraState.y) / cameraState.scale, 20, 800);
+        group.setAttribute("transform", `translate(${topics[id].x}, ${topics[id].y})`);
+        refreshLinksForNode(id);
+        nodeDragMoved = true;
+      });
+
+      group.addEventListener("pointerup", (event) => {
+        if (draggedNodeId !== id) return;
+        group.releasePointerCapture(event.pointerId);
+        draggedNodeId = null;
+        event.stopPropagation();
+      });
+
+      group.addEventListener("click", (event) => {
+        if (nodeDragMoved) {
+          nodeDragMoved = false;
+          event.preventDefault();
+          return;
+        }
+        selectTopic(id);
+      });
+
+      group.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          selectTopic(id);
+        }
+      });
+
+      camera.appendChild(group);
+      nodeEls.set(id, group);
+    }
+
+    function buildSearchText(id) {
+      const source = currentMode === "ai" ? topics : promptTopics;
+      const item = source[id];
+      const relatedTitles = (item.related || []).map((relatedId) => source[relatedId]?.title || "").join(" ");
+      return [
+        item.title,
+        item.era,
+        item.summary,
+        item.core,
+        item.importance,
+        item.interactive,
+        (item.points || []).join(" "),
+        relatedTitles,
+        item.searchText || ""
+      ].join(" ").toLowerCase();
+    }
+
+    function tokenize(text) {
+      return (text.toLowerCase().match(/[a-z0-9_]+/g) || []).filter(Boolean);
+    }
+
+    function rankTopics(query) {
+      const queryText = query.trim().toLowerCase();
+      const queryTokens = tokenize(queryText);
+      const source = currentMode === "ai" ? topics : promptTopics;
+      return Object.keys(source)
+        .map((id) => {
+          const item = source[id];
+          const haystack = buildSearchText(id);
+          let score = 0;
+
+          if (haystack.includes(queryText) && queryText) score += 8;
+          if (item.title.toLowerCase().includes(queryText) && queryText) score += 10;
+
+          queryTokens.forEach((token) => {
+            if (item.title.toLowerCase().includes(token)) score += 4;
+            if (haystack.includes(token)) score += 2;
+          });
+
+          return { id, item, score };
+        })
+        .filter((entry) => entry.score > 0)
+        .sort((a, b) => b.score - a.score || a.item.title.localeCompare(b.item.title));
+    }
+
+    function renderTopicStack(filter = "") {
+      const query = filter.trim().toLowerCase();
+      const source = currentMode === "ai" ? topics : promptTopics;
+      const entries = Object.entries(source);
+      const scored = entries
+        .map(([id, item]) => {
+          const haystack = buildSearchText(id);
+          const titleMatch = item.title.toLowerCase().includes(query);
+          const score = !query ? 1 : titleMatch ? 3 : haystack.includes(query) ? 2 : 0;
+          return { id, item, score };
+        })
+        .filter((entry) => entry.score > 0)
+        .sort((a, b) => b.score - a.score || a.item.title.localeCompare(b.item.title));
+
+      visibleTopicIds = scored.map((entry) => entry.id);
+      topicStack.innerHTML = "";
+      stackButtons.clear();
+
+      if (!scored.length) {
+        const empty = document.createElement("p");
+        empty.className = "search-hint";
+        empty.textContent = "No topics matched. Try a broader term like transformer, local, GPU, or context.";
+        topicStack.appendChild(empty);
+        return;
+      }
+
+      scored.forEach(({ id, item }) => {
+        const button = document.createElement("button");
+        button.innerHTML = `${item.title}<small>${item.era}</small>`;
+        button.addEventListener("click", () => selectTopic(id));
+        topicStack.appendChild(button);
+        stackButtons.set(id, button);
+      });
+    }
+
+    function updateSearchHint(query) {
+      if (!query.trim()) {
+        searchHint.textContent = currentMode === "ai"
+          ? "Search across all topic content. For example, searching `Runpod` can bring you to the topic where it is discussed."
+          : "Search across the prompting methods by idea, workflow, or reasoning style.";
+        return;
+      }
+      if (visibleTopicIds.length) {
+        searchHint.textContent = `Found ${visibleTopicIds.length} matching topic${visibleTopicIds.length === 1 ? "" : "s"}. Press Enter to open the best match.`;
+      } else {
+        searchHint.textContent = "No exact topic context matched that search yet.";
+      }
+    }
+
+    function answerQuestion() {
+      const question = askInput.value.trim();
+      if (!question) {
+        askAnswer.textContent = "Type a question first, then I'll match it to the closest topic and explain why.";
+        return;
+      }
+
+      const ranked = rankTopics(question);
+      if (!ranked.length) {
+        askAnswer.textContent = "I could not confidently match that question yet. Try terms like local, GPU, context, transformer, model access, or tokens.";
+        return;
+      }
+
+      const best = ranked[0];
+      const backups = ranked.slice(1, 3);
+      selectTopic(best.id);
+
+      askAnswer.innerHTML = "";
+      const lead = document.createElement("div");
+      lead.innerHTML = `<strong>Best match: ${best.item.title}</strong><br>${best.item.answerStem || best.item.summary}`;
+      askAnswer.appendChild(lead);
+
+      if (backups.length) {
+        const linksWrap = document.createElement("div");
+        linksWrap.className = "ask-links";
+        backups.forEach(({ id, item }) => {
+          const button = document.createElement("button");
+          button.textContent = `Also see: ${item.title}`;
+          button.addEventListener("click", () => {
+            selectTopic(id);
+            askInput.value = question;
+          });
+          linksWrap.appendChild(button);
+        });
+        askAnswer.appendChild(linksWrap);
+      }
+    }
+
+    function renderPromptHub() {
+      promptHub.innerHTML = "";
+      Object.entries(promptTopics).forEach(([id, item]) => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "prompt-card";
+        card.innerHTML = `<h3>${item.title}</h3><p>${item.core}</p>`;
+        card.addEventListener("click", () => selectTopic(id));
+        promptHub.appendChild(card);
+      });
+    }
+
+    function selectTopic(id) {
+      selectedTopicId = id;
+      const source = currentMode === "ai" ? topics : promptTopics;
+      const item = source[id];
+      detailTitle.textContent = item.title;
+      detailEra.textContent = item.era;
+      detailSummary.textContent = item.summary;
+      detailCore.textContent = item.core;
+      detailImportance.textContent = item.importance;
+      detailInteractive.textContent = item.interactive;
+      detailPoints.innerHTML = "";
+      item.points.forEach((point) => {
+        const li = document.createElement("li");
+        li.textContent = point;
+        detailPoints.appendChild(li);
+      });
+
+      relatedTopics.innerHTML = "";
+      item.related.forEach((relatedId) => {
+        const button = document.createElement("button");
+        button.textContent = source[relatedId].title;
+        button.addEventListener("click", () => selectTopic(relatedId));
+        relatedTopics.appendChild(button);
+      });
+
+      topicResources.innerHTML = "";
+      (item.resources || []).forEach((resource) => {
+        const link = document.createElement("a");
+        link.href = resource.url;
+        link.target = "_blank";
+        link.rel = "noreferrer";
+        link.textContent = resource.label;
+        link.style.display = "inline-flex";
+        link.style.alignItems = "center";
+        link.style.minHeight = "2.75rem";
+        link.style.padding = "0.68rem 0.95rem";
+        link.style.borderRadius = "999px";
+        link.style.background = "rgba(15, 118, 110, 0.1)";
+        link.style.color = "var(--accent)";
+        link.style.textDecoration = "none";
+        topicResources.appendChild(link);
+      });
+
+      if (currentMode === "ai") {
+        linkEls.forEach((link) => {
+          const active = (link.dataset.from === id || link.dataset.to === id) || (item.related.includes(link.dataset.from) && link.dataset.to === id) || (item.related.includes(link.dataset.to) && link.dataset.from === id);
+          link.classList.toggle("active", active);
+        });
+
+        nodeEls.forEach((el, nodeId) => {
+          el.classList.toggle("active", nodeId === id || item.related.includes(nodeId));
+        });
+      } else {
+        linkEls.forEach((link) => link.classList.remove("active"));
+        nodeEls.forEach((el) => el.classList.remove("active"));
+        Array.from(promptHub.children).forEach((card, index) => {
+          const promptId = Object.keys(promptTopics)[index];
+          card.classList.toggle("active", promptId === id);
+        });
+      }
+
+      stackButtons.forEach((button, buttonId) => {
+        button.classList.toggle("active", buttonId === id);
+      });
+
+      if (currentMode === "ai") {
+        centerOnTopic(id, id === "overview" ? 1 : 1.55);
+      }
+    }
+
+    function setupMapInteractions() {
+      svg.addEventListener("pointerdown", (event) => {
+        if (event.target.closest && event.target.closest(".node")) {
+          return;
+        }
+        isDraggingMap = true;
+        svg.classList.add("dragging");
+        svg.setPointerCapture(event.pointerId);
+        dragStart = { x: event.clientX, y: event.clientY, cameraX: cameraState.x, cameraY: cameraState.y };
+      });
+
+      svg.addEventListener("pointermove", (event) => {
+        if (!isDraggingMap) return;
+        cameraState.x = dragStart.cameraX + (event.clientX - dragStart.x);
+        cameraState.y = dragStart.cameraY + (event.clientY - dragStart.y);
+        applyCamera();
+      });
+
+      const stopDragging = () => {
+        isDraggingMap = false;
+        svg.classList.remove("dragging");
+      };
+
+      svg.addEventListener("pointerup", stopDragging);
+      svg.addEventListener("pointerleave", stopDragging);
+      window.addEventListener("pointerup", () => {
+        draggedNodeId = null;
+      });
+      svg.addEventListener("wheel", (event) => {
+        event.preventDefault();
+        zoomBy(event.deltaY < 0 ? 0.12 : -0.12);
+      }, { passive: false });
+    }
+
+    function setupSplitters() {
+      if (window.innerWidth < 1024) return;
+
+      const configs = [
+        { element: mapSplitter, variable: "--left-panel", min: 18, max: 34, side: "left", boundsTarget: document.querySelector(".map-layout") },
+        { element: pageSplitter, variable: "--right-panel", min: 20, max: 36, side: "right", boundsTarget: workspace }
+      ];
+
+      configs.forEach(({ element, variable, min, max, side, boundsTarget }) => {
+        if (!element) return;
+        element.addEventListener("pointerdown", (event) => {
+          const bounds = boundsTarget.getBoundingClientRect();
+          const onMove = (moveEvent) => {
+            let remValue;
+            if (side === "left") {
+              remValue = clamp((moveEvent.clientX - bounds.left) / 16, min, max);
+            } else {
+              remValue = clamp((bounds.right - moveEvent.clientX) / 16, min, max);
+            }
+            boundsTarget.style.setProperty(variable, `${remValue}rem`);
+          };
+
+          const onUp = () => {
+            window.removeEventListener("pointermove", onMove);
+            window.removeEventListener("pointerup", onUp);
+          };
+
+          window.addEventListener("pointermove", onMove);
+          window.addEventListener("pointerup", onUp);
+          event.preventDefault();
+        });
+      });
+    }
+
+    function renderTimelineForMode() {
+      const source = currentMode === "ai" ? topics : promptTopics;
+      const sourceTimeline = currentMode === "ai" ? timeline : promptTimeline;
+      timelineNav.innerHTML = "";
+      sourceTimeline.forEach((id) => {
+        const button = document.createElement("button");
+        button.textContent = source[id].title;
+        button.addEventListener("click", () => selectTopic(id));
+        timelineNav.appendChild(button);
+      });
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      tabAi.classList.toggle("active", mode === "ai");
+      tabPrompting.classList.toggle("active", mode === "prompting");
+      document.title = mode === "ai" ? "AI Evolution Mindmap" : "Prompting Type Website";
+      mapShell.style.display = mode === "ai" ? "block" : "none";
+      promptHub.classList.toggle("active", mode === "prompting");
+      mapPanelTitle.textContent = mode === "ai" ? "Clickable Mindmap of AI History and Ideas" : "Prompting Types and Reasoning Patterns";
+      mapPanelLead.textContent = mode === "ai"
+        ? "This map connects the early questions about machine intelligence to symbolic AI, machine learning, neural networks, transformers, and modern GPT-style models. Click any topic to see what it means and how it links to the rest."
+        : "This view collects prompting methods, reasoning patterns, workflow prompts, and formatting strategies without forcing them into the AI history map.";
+      mapInstructions.innerHTML = mode === "ai"
+        ? '<span class="tag">Click a node</span><span class="tag">Use related-topic buttons</span><span class="tag">Follow the historical flow</span>'
+        : '<span class="tag">Browse prompt patterns</span><span class="tag">Search by prompting goal</span><span class="tag">Open a method for details</span>';
+      askAnswer.textContent = mode === "ai"
+        ? 'Ask something like "how can I expand my resources when I don\'t have it locally?" and the map will suggest the closest topic.'
+        : 'Ask something like "which prompting type helps with multi-step reasoning?" and this view will point you to the best method.';
+      renderTopicStack(topicSearch.value);
+      updateSearchHint(topicSearch.value);
+      renderTimelineForMode();
+      selectTopic(mode === "ai" ? "overview" : "system_prompting");
+    }
+
+    function togglePanel(side) {
+      if (window.innerWidth < 1024) return;
+      if (side === "left") {
+        document.querySelector(".page").classList.toggle("left-collapsed");
+        leftRail.classList.toggle("minimized");
+        collapseLeft.textContent = leftRail.classList.contains("minimized") ? "+" : "-";
+      } else {
+        document.querySelector(".page").classList.toggle("right-collapsed");
+        infoPanel.classList.toggle("minimized");
+        collapseRight.textContent = infoPanel.classList.contains("minimized") ? "+" : "-";
+      }
+    }
+
+    resolveTopicCollisions();
+    links.forEach(([from, to]) => addLink(from, to));
+    Object.entries(topics).forEach(([id, item]) => addNode(id, item));
+    renderPromptHub();
+    renderTopicStack();
+    setupMapInteractions();
+    setupSplitters();
+    applyCamera();
+    topicSearch.addEventListener("input", (event) => {
+      renderTopicStack(event.target.value);
+      updateSearchHint(event.target.value);
+    });
+    topicSearch.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && visibleTopicIds.length) {
+        selectTopic(visibleTopicIds[0]);
+      }
+    });
+    askButton.addEventListener("click", answerQuestion);
+    askInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") answerQuestion();
+    });
+    askClear.addEventListener("click", () => {
+      askInput.value = "";
+      askAnswer.textContent = "Ask something like \"how can I expand my resources when I don't have it locally?\" and the map will suggest the closest topic.";
+    });
+    zoomInButton.addEventListener("click", () => zoomBy(0.16));
+    zoomOutButton.addEventListener("click", () => zoomBy(-0.16));
+    zoomResetButton.addEventListener("click", () => selectTopic(selectedTopicId));
+    tabAi.addEventListener("click", () => setMode("ai"));
+    tabPrompting.addEventListener("click", () => setMode("prompting"));
+    toggleLeft.addEventListener("click", () => togglePanel("left"));
+    toggleRight.addEventListener("click", () => togglePanel("right"));
+    collapseLeft.addEventListener("click", () => togglePanel("left"));
+    collapseRight.addEventListener("click", () => togglePanel("right"));
+    setMode("ai");
+  </script>
+</body>
+</html>
