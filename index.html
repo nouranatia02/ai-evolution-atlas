@@ -61,6 +61,28 @@
         linear-gradient(135deg, #0f1720 0%, #111c25 48%, #14212b 100%);
     }
 
+    body[data-mode="rag"] {
+      --accent: #0d9488;
+      --accent-2: #2563eb;
+      --accent-3: #22c55e;
+      --node-active: #d9fbf8;
+      background:
+        radial-gradient(circle at top left, rgba(13, 148, 136, 0.14), transparent 24%),
+        radial-gradient(circle at 88% 12%, rgba(37, 99, 235, 0.12), transparent 20%),
+        linear-gradient(135deg, #edf8f7 0%, #ebf5fb 50%, #f7fbfb 100%);
+    }
+
+    body.dark-theme[data-mode="rag"] {
+      --accent: #36d4c7;
+      --accent-2: #7ab8ff;
+      --accent-3: #8ce78c;
+      --node-active: #214a52;
+      background:
+        radial-gradient(circle at top left, rgba(54, 212, 199, 0.13), transparent 24%),
+        radial-gradient(circle at 88% 12%, rgba(122, 184, 255, 0.12), transparent 20%),
+        linear-gradient(135deg, #0d171d 0%, #10222b 50%, #132931 100%);
+    }
+
     .page {
       display: grid;
       grid-template-columns: 1fr;
@@ -427,6 +449,32 @@
       mask-image: radial-gradient(circle at center, black 45%, transparent 88%);
     }
 
+    body[data-mode="rag"] .map-shell {
+      background:
+        radial-gradient(circle at top left, rgba(13, 148, 136, 0.1), transparent 28%),
+        radial-gradient(circle at 84% 20%, rgba(37, 99, 235, 0.08), transparent 24%),
+        linear-gradient(135deg, rgba(248, 254, 254, 0.97), rgba(238, 248, 251, 0.94));
+    }
+
+    body[data-mode="rag"] .map-shell::before {
+      background-image:
+        linear-gradient(rgba(13, 148, 136, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(37, 99, 235, 0.05) 1px, transparent 1px);
+    }
+
+    body.dark-theme[data-mode="rag"] .map-shell {
+      background:
+        radial-gradient(circle at top left, rgba(54, 212, 199, 0.08), transparent 28%),
+        radial-gradient(circle at 84% 20%, rgba(122, 184, 255, 0.08), transparent 24%),
+        linear-gradient(180deg, rgba(12, 24, 30, 0.97), rgba(15, 31, 38, 0.98));
+    }
+
+    body.dark-theme[data-mode="rag"] .map-shell::before {
+      background-image:
+        linear-gradient(rgba(54, 212, 199, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(122, 184, 255, 0.06) 1px, transparent 1px);
+    }
+
     .map-toolbar {
       position: absolute;
       top: 1rem;
@@ -748,6 +796,7 @@
       <div class="ribbon-tabs">
         <button class="ribbon-tab active" id="tab-ai" type="button">AI Atlas</button>
         <button class="ribbon-tab" id="tab-prompting" type="button">Prompting Types</button>
+        <button class="ribbon-tab" id="tab-rag" type="button">RAG Systems</button>
       </div>
       <div class="ribbon-actions">
         <button class="panel-toggle" id="toggle-theme" type="button">Dark Mode</button>
@@ -927,6 +976,117 @@
       model_explaining_cot: { title: "Model Explaining Chain of Thought", era: "Reasoning Prompts", summary: "This prompting style asks the model to explain the reasoning path itself, not just return the final answer. It can be used for teaching, transparency, and walkthrough-style explanations.", core: "Have the model expose or explain the reasoning path in a human-readable way.", importance: "It is useful for learning and debugging prompt behavior, even when the final answer is already known.", interactive: "Compare this with chain of thought: one uses internal stepwise reasoning, while this one emphasizes the explanation of that reasoning to the user.", points: ["Reasoning explanation", "Teaching and walkthroughs", "Transparent problem solving"], related: ["chain_of_thought", "meta_prompting", "self_consistency"] }
     };
     const promptTimeline = ["system_prompting", "role_prompting", "rccf_prompting", "structured_output", "prompt_chaining", "chain_of_thought", "model_explaining_cot", "self_consistency", "tree_of_thoughts", "meta_prompting"];
+    const ragTopics = {
+      rag_overview: { title: "RAG", era: "Overview", x: 560, y: 390, r: 58, summary: "Retrieval-Augmented Generation combines a language model with external knowledge retrieval. Instead of answering from model memory alone, it pulls relevant chunks from documents, code, PDFs, or internal knowledge bases, then uses those chunks to ground the answer.", core: "Retrieve relevant context first, then generate with that context in hand.", importance: "RAG helps models answer with fresher, more specific, and more explainable knowledge than a model can provide from weights alone.", interactive: "Start here, then open embeddings, chunking, vector databases, and the 5-step pipeline to see how the whole system works end to end.", points: ["Retrieval plus generation", "Grounded answers", "External knowledge source"], related: ["rag_usage", "embeddings", "vector_db", "chunking", "rag_steps"], answerStem: "If the question is about how a model can answer using your own documents or codebase, RAG is the main concept." },
+      rag_usage: { title: "RAG Usage", era: "Practical Use", x: 250, y: 220, r: 46, summary: "A common use of RAG is asking questions over your own codebase, company docs, or product knowledge. When retrieval is strong, the assistant can answer as if it helped design the system because it can fetch architecture notes, API docs, and implementation details from the real source material.", core: "RAG lets the model sound informed about a specific private system by retrieving the right supporting context.", importance: "This is what makes codebase chat, internal knowledge bots, and document assistants useful in real workflows.", interactive: "Connect this to similarity search and chunking: the quality of the answer depends heavily on whether the right pieces were split, embedded, and retrieved.", points: ["Ask your codebase questions", "Ground in internal docs", "Acts informed because retrieval supplies context"], related: ["rag_overview", "similarity", "chunking", "rag_steps"], searchText: "codebase docs repository repo design architecture assistant private knowledge source grounding", answerStem: "If you want a model to answer like it knows your own system, the practical method is usually RAG over your codebase or documentation." },
+      grpo: { title: "GRPO", era: "Optimization Context", x: 210, y: 520, r: 38, summary: "GRPO stands for Group Relative Policy Optimization. It is a reinforcement-learning style optimization idea used in modern model training and post-training discussions. It is not a RAG pipeline component by itself, but it belongs nearby conceptually because it influences how model behavior can be improved once retrieval systems expose tasks, feedback, and evaluation setups.", core: "GRPO is about improving policy behavior relative to grouped comparisons, not about retrieval storage itself.", importance: "Including it here helps separate model optimization techniques from retrieval architecture. RAG gives the model better context, while GRPO-style methods tune how the model behaves.", interactive: "Use this topic to distinguish between improving a model through training or post-training versus improving answers through retrieval over external knowledge.", points: ["Optimization method", "Not the same as retrieval", "Model behavior vs knowledge access"], related: ["rag_overview", "rag_usage", "rag_steps"], searchText: "Group Relative Policy Optimization reinforcement learning post training alignment optimization", answerStem: "GRPO is more about model optimization than retrieval. RAG changes what information the model sees, while GRPO-style methods change how the model behaves." },
+      embeddings: { title: "Text Embeddings", era: "Representation Layer", x: 470, y: 150, r: 48, summary: "Text embeddings transform language into numerical vectors so that meaning can be compared mathematically. Similar pieces of text tend to land closer together in vector space, which allows search systems to retrieve related chunks even when the exact wording is different.", core: "Meaning is represented as coordinates in a high-dimensional vector space.", importance: "Embeddings are the bridge between raw text and semantic retrieval in modern RAG systems.", interactive: "Open the full embedding process next, then follow it into vector databases and similarity search.", points: ["Text to vectors", "Meaning as geometry", "Foundation of semantic retrieval"], related: ["embedding_process", "vector_db", "similarity", "rag_overview"], answerStem: "If the question is about how the system turns language into something searchable by meaning, embeddings are the key idea." },
+      embedding_process: { title: "Embedding Process", era: "Text to Vector Flow", x: 700, y: 170, r: 44, summary: "The embedding process usually goes like this: collect documents, clean them, split them into chunks, send each chunk through an embedding model, receive a vector for each chunk, and store both the vector and the original text in a retrieval system. When a user asks a question, the query is embedded too and compared against the stored chunk vectors.", core: "Documents and queries both become vectors so they can be matched in the same mathematical space.", importance: "This is the core mechanism that turns document collections into searchable semantic memory.", interactive: "Use this with vector space and query matching to explain the full journey from text to retrieval.", points: ["Prepare text", "Embed chunks", "Embed the query", "Compare in shared vector space"], related: ["embeddings", "vector_space", "similarity", "chunking"], searchText: "text cleaning preprocessing chunk embed store query embed retrieve shared space", answerStem: "The full embedding flow is document preparation, chunking, vectorization, storage, and then query-to-vector matching at retrieval time." },
+      vector_space: { title: "Vector Database and 3D Space", era: "Storage Layer", x: 910, y: 240, r: 46, summary: "A vector database stores the embeddings for your chunks along with metadata and references back to the original source. A simple way to explain it visually is as a 3D space where each colored point or cluster represents a chunk, and related chunks sit near one another like concept neighborhoods connected by meaning.", core: "Chunks become points in a meaning-space, and the database lets you index and search those points efficiently.", importance: "This is what makes semantic search fast and practical at scale rather than comparing every chunk manually.", interactive: "Think of each colored region as part of a larger topic area. Nearby chunks are more semantically related, even if the wording differs.", points: ["Vector storage", "Semantic neighborhoods", "Metadata plus source references"], related: ["embedding_process", "similarity", "vector_db", "chunking"], searchText: "3d space colored chunks semantic neighborhood index metadata nearest neighbors", answerStem: "A vector database is the system that stores chunk vectors so the query vector can search for the nearest semantic matches." },
+      vector_db: { title: "Similarity Search", era: "Retrieval Step", x: 980, y: 470, r: 44, summary: "Similarity search compares the query vector against stored vectors and returns the closest matches. Those nearest chunks are treated as the most relevant context to send into the model. The match is based on distance or similarity in vector space rather than exact keyword overlap.", core: "The query vector is matched to the closest chunk vectors in the database.", importance: "This step is what makes semantic retrieval feel smarter than ordinary keyword search.", interactive: "Use this with the vector space topic to explain why a chunk can be found even when it uses different wording from the query.", points: ["Nearest-neighbor lookup", "Semantic closeness", "Retrieved chunks feed generation"], related: ["vector_space", "embeddings", "rag_steps", "rag_usage"], searchText: "nearest neighbor cosine similarity dense retrieval semantic search closest vector query vector", answerStem: "When a user asks a question, the system embeds the query and searches for the closest stored vectors. That is the heart of retrieval." },
+      similarity: { title: "Query Vector Matching", era: "Retrieval Logic", x: 760, y: 380, r: 42, summary: "After the user question is embedded, the query vector is compared to the stored chunk vectors. The system retrieves the closest ones, often using cosine similarity or related nearest-neighbor methods, then passes those matched chunks into the generation step.", core: "The query becomes a vector and is matched to nearby chunk vectors.", importance: "This is the moment where the user's need is translated into retrieval decisions.", interactive: "Use this node to connect the human question to the mathematical retrieval layer underneath the system.", points: ["Embed the question", "Compare distances", "Retrieve nearest chunks"], related: ["embedding_process", "vector_db", "vector_space", "rag_steps"], answerStem: "The query is not searched as plain text only. It becomes a vector, then the system retrieves the nearest chunk vectors in embedding space." },
+      chunking: { title: "Chunking Types", era: "Document Preparation", x: 420, y: 560, r: 46, summary: "Chunking is the process of splitting documents into smaller pieces before embedding them. Common chunking types include uniform fixed-size chunking, fixed-size chunking with overlap, sentence-based chunking, paragraph-based chunking, recursive or hierarchical chunking, semantic chunking, section or heading-aware chunking, metadata-aware chunking, and document-specific strategies for code, tables, or PDFs.", core: "Good chunking shapes what the retriever can find later.", importance: "If chunks are too large, answers become noisy. If they are too small, the meaning gets fragmented. Retrieval quality depends heavily on this step.", interactive: "Open uniform chunking with overlap next, then compare it mentally with semantic or structure-aware chunking for richer documents.", points: ["Fixed-size", "Overlap", "Sentence-based", "Paragraph-based", "Recursive", "Semantic", "Structure-aware", "Metadata-aware"], related: ["chunk_overlap", "embedding_process", "rag_steps", "rag_usage"], answerStem: "Chunking determines how documents are split before embedding, and that decision strongly affects what the system can retrieve later." },
+      chunk_overlap: { title: "Uniform Chunking with Overlap", era: "Chunking Example", x: 250, y: 670, r: 40, summary: "Uniform chunking with overlap splits a document into equal-sized windows and repeats a small part of the previous chunk inside the next one. The overlap helps preserve continuity so important meaning near chunk boundaries is less likely to be lost.", core: "Overlapping windows reduce the chance that meaning gets cut apart at the boundaries.", importance: "This is one of the most common beginner-friendly chunking strategies because it is simple, reliable, and easy to tune.", interactive: "Use this as the concrete example when explaining chunking in practical RAG tutorials.", points: ["Fixed-size windows", "Shared boundary text", "Simple and common"], related: ["chunking", "rag_steps", "embeddings"], searchText: "sliding window overlap fixed chunk size boundaries context continuity", answerStem: "A common chunking baseline is fixed-size chunks with overlap so important context is not split too harshly across chunk boundaries." },
+      rag_steps: { title: "RAG in 5 Steps", era: "Pipeline Overview", x: 570, y: 700, r: 50, summary: "A simple way to explain RAG is in five stages: load documents, split them into chunks, embed the chunks, store the vectors, then query the system so it can search, retrieve, and generate an answer. This makes the pipeline easier to teach and debug.", core: "Load, split, embed, store, query.", importance: "The 5-step view turns an abstract architecture into a clear operational workflow.", interactive: "Open the five step nodes to walk through the pipeline visually from raw files to grounded answers.", points: ["Load", "Split", "Embed", "Store", "Query"], related: ["step_load", "step_split", "step_embed", "step_store", "step_query"], answerStem: "The shortest useful mental model is: load documents, split them, embed them, store them, then query and generate from the retrieved results." },
+      step_load: { title: "1. Load", era: "Pipeline Step", x: 700, y: 620, r: 34, summary: "Load the source material such as PDFs, docs, pages, or code files into the system.", core: "Bring external knowledge into the pipeline.", importance: "Without reliable loading, the rest of the retrieval system has nothing useful to work with.", interactive: "This step is about ingestion before any splitting or embedding happens.", points: ["Read source files", "Normalize inputs", "Prepare for chunking"], related: ["rag_steps", "step_split"] },
+      step_split: { title: "2. Split", era: "Pipeline Step", x: 820, y: 650, r: 34, summary: "Split the loaded material into manageable chunks so retrieval can work at the right granularity.", core: "Break documents into useful pieces.", importance: "This step defines how meaning is packaged for later retrieval.", interactive: "This is where chunking strategy becomes critical.", points: ["Chunk documents", "Choose granularity", "Preserve context"], related: ["rag_steps", "chunking", "chunk_overlap", "step_embed"] },
+      step_embed: { title: "3. Embed", era: "Pipeline Step", x: 930, y: 720, r: 34, summary: "Convert each chunk into an embedding vector using an embedding model.", core: "Transform chunks into searchable vectors.", importance: "This is what makes semantic retrieval possible.", interactive: "The same embedding idea is used later on the user query too.", points: ["Run embedding model", "Get vectors", "Keep text plus vector"], related: ["rag_steps", "embeddings", "embedding_process", "step_store"] },
+      step_store: { title: "4. Store", era: "Pipeline Step", x: 1040, y: 650, r: 34, summary: "Save vectors, metadata, and source references in a vector database or retrieval index.", core: "Store semantic representations for fast lookup.", importance: "Efficient storage enables large-scale retrieval over many documents.", interactive: "This is the persistence layer that prepares the system for user questions.", points: ["Vector index", "Metadata", "Source traceability"], related: ["rag_steps", "vector_space", "vector_db", "step_query"] },
+      step_query: { title: "5. Query", era: "Pipeline Step", x: 1070, y: 540, r: 34, summary: "Embed the user query, retrieve the nearest chunks, and then generate an answer from that retrieved context.", core: "Search, retrieve, then generate.", importance: "This final step is the visible user experience of the whole RAG pipeline.", interactive: "This is the answer moment, but it depends completely on the earlier loading, chunking, embedding, and storage work.", points: ["Embed query", "Retrieve matches", "Generate grounded answer"], related: ["rag_steps", "similarity", "vector_db", "rag_usage"] }
+    };
+    const ragLinks = [
+      ["rag_overview", "rag_usage"],
+      ["rag_overview", "embeddings"],
+      ["rag_overview", "chunking"],
+      ["rag_overview", "rag_steps"],
+      ["rag_overview", "grpo"],
+      ["embeddings", "embedding_process"],
+      ["embedding_process", "vector_space"],
+      ["vector_space", "vector_db"],
+      ["embedding_process", "similarity"],
+      ["similarity", "vector_db"],
+      ["chunking", "chunk_overlap"],
+      ["chunking", "embedding_process"],
+      ["rag_usage", "similarity"],
+      ["rag_usage", "chunking"],
+      ["rag_steps", "step_load"],
+      ["rag_steps", "step_split"],
+      ["rag_steps", "step_embed"],
+      ["rag_steps", "step_store"],
+      ["rag_steps", "step_query"],
+      ["step_load", "step_split"],
+      ["step_split", "step_embed"],
+      ["step_embed", "step_store"],
+      ["step_store", "step_query"],
+      ["step_split", "chunking"],
+      ["step_embed", "embeddings"],
+      ["step_store", "vector_space"],
+      ["step_query", "vector_db"],
+      ["step_query", "rag_usage"]
+    ];
+    const ragTimeline = ["rag_overview", "rag_usage", "embeddings", "embedding_process", "vector_space", "similarity", "vector_db", "chunking", "chunk_overlap", "rag_steps", "step_load", "step_split", "step_embed", "step_store", "step_query", "grpo"];
+    const modeConfigs = {
+      ai: {
+        title: "Clickable Mindmap of AI History and Ideas",
+        lead: "This map connects the early questions about machine intelligence to symbolic AI, machine learning, neural networks, transformers, and modern GPT-style models. Click any topic to see what it means and how it links to the rest.",
+        instructions: ['Click a node', 'Use related-topic buttons', 'Follow the historical flow'],
+        askText: 'Ask something like "how can I expand my resources when I don\\'t have it locally?" and the map will suggest the closest topic.',
+        askPlaceholder: "Ask in plain language about AI history or models...",
+        searchPlaceholder: "Search ideas, tools, or use cases...",
+        emptyHint: "No topics matched. Try a broader term like transformer, local, GPU, or context.",
+        searchHint: "Search across all topic content. For example, searching `Runpod` can bring you to the topic where it is discussed.",
+        titleTag: "Interactive AI Story",
+        detailTag: "Topic Detail",
+        legend: ["Symbolic AI", "Machine Learning", "Neural Networks", "Transformer Era"],
+        graph: true,
+        defaultTopic: "overview",
+        topics,
+        links,
+        timeline,
+        titleText: "AI Evolution Mindmap",
+        ariaLabel: "AI history mindmap"
+      },
+      prompting: {
+        title: "Prompting Types and Reasoning Patterns",
+        lead: "This view collects prompting methods, reasoning patterns, workflow prompts, and formatting strategies without forcing them into the AI history map.",
+        instructions: ['Browse prompt patterns', 'Search by prompting goal', 'Open a method for details'],
+        askText: 'Ask something like "which prompting type helps with multi-step reasoning?" and this view will point you to the best method.',
+        askPlaceholder: "Ask about prompting styles, reasoning, or output control...",
+        searchPlaceholder: "Search prompting methods or goals...",
+        emptyHint: "No prompting topic matched yet. Try terms like chain, structured, role, or system.",
+        searchHint: "Search across the prompting methods by idea, workflow, or reasoning style.",
+        titleTag: "Prompting Atlas",
+        detailTag: "Prompt Detail",
+        legend: ["Foundations", "Reasoning", "Workflow", "Formatting"],
+        graph: false,
+        defaultTopic: "system_prompting",
+        topics: promptTopics,
+        links: [],
+        timeline: promptTimeline,
+        titleText: "Prompting Type Website",
+        ariaLabel: "Prompting types overview"
+      },
+      rag: {
+        title: "RAG Systems and Vector Retrieval",
+        lead: "This map explains Retrieval-Augmented Generation through embeddings, chunking, vector databases, similarity search, and the full five-step pipeline from loading documents to grounded answers.",
+        instructions: ['Explore the retrieval flow', 'Open chunking and vector topics', 'Follow the 5-step pipeline'],
+        askText: 'Ask something like "how does a codebase assistant know my architecture?" and this panel will route you through the RAG concepts behind it.',
+        askPlaceholder: "Ask about retrieval, chunking, vectors, or codebase chat...",
+        searchPlaceholder: "Search RAG concepts, steps, or use cases...",
+        emptyHint: "No RAG topic matched yet. Try terms like embedding, chunking, vector, retrieval, or codebase.",
+        searchHint: "Search across the RAG panel by concept, pipeline step, or use case.",
+        titleTag: "RAG Studio",
+        detailTag: "RAG Detail",
+        legend: ["Embeddings", "Vector Search", "Chunking", "Pipeline"],
+        graph: true,
+        defaultTopic: "rag_overview",
+        topics: ragTopics,
+        links: ragLinks,
+        timeline: ragTimeline,
+        titleText: "RAG Systems Mindmap",
+        ariaLabel: "RAG systems mindmap"
+      }
+    };
 
     const workspace = document.querySelector(".page");
     const svg = document.getElementById("mindmap-svg");
@@ -938,6 +1098,7 @@
     const zoomResetButton = document.getElementById("zoom-reset");
     const tabAi = document.getElementById("tab-ai");
     const tabPrompting = document.getElementById("tab-prompting");
+    const tabRag = document.getElementById("tab-rag");
     const toggleTheme = document.getElementById("toggle-theme");
     const toggleLeft = document.getElementById("toggle-left");
     const toggleRight = document.getElementById("toggle-right");
@@ -961,6 +1122,9 @@
     const promptHub = document.getElementById("prompt-hub");
     const leftRail = document.querySelector(".left-rail");
     const infoPanel = document.querySelector(".info-panel");
+    const mapEyebrow = document.querySelector(".map-panel .eyebrow");
+    const detailEyebrow = document.querySelector(".info-panel .eyebrow");
+    const detailLegend = document.querySelector(".legend");
     const mapPanelTitle = document.querySelector(".map-panel h1");
     const mapPanelLead = document.querySelector(".map-panel .lead");
     const mapInstructions = document.querySelector(".instructions");
@@ -991,18 +1155,31 @@
       syncThemeButton();
     }
 
+    function getModeConfig(mode = currentMode) {
+      return modeConfigs[mode];
+    }
+
+    function getActiveTopics() {
+      return getModeConfig().topics;
+    }
+
+    function getActiveLinks() {
+      return getModeConfig().links || [];
+    }
+
     function clamp(value, min, max) {
       return Math.min(max, Math.max(min, value));
     }
 
     function applyCamera() {
       camera.setAttribute("transform", `translate(${cameraState.x} ${cameraState.y}) scale(${cameraState.scale})`);
-      const source = currentMode === "ai" ? topics : promptTopics;
+      const source = getActiveTopics();
       mapReadout.textContent = `${source[selectedTopicId]?.title || "Overview"} focus - ${Math.round(cameraState.scale * 100)}%`;
     }
 
     function centerOnTopic(id, scale = 1.55) {
-      const item = topics[id];
+      const item = getActiveTopics()[id];
+      if (!item) return;
       const targetScale = clamp(scale, 0.75, 2.8);
       cameraState.scale = targetScale;
       cameraState.x = 550 - item.x * targetScale;
@@ -1015,8 +1192,8 @@
       applyCamera();
     }
 
-    function resolveTopicCollisions() {
-      const movableIds = Object.keys(topics).filter((id) => id !== "overview");
+    function resolveTopicCollisions(sourceTopics, centerId) {
+      const movableIds = Object.keys(sourceTopics).filter((id) => id !== centerId);
       const bounds = { minX: 20, maxX: 1800, minY: 20, maxY: 1200 };
 
       for (let iteration = 0; iteration < 140; iteration += 1) {
@@ -1024,8 +1201,8 @@
 
         for (let i = 0; i < movableIds.length; i += 1) {
           for (let j = i + 1; j < movableIds.length; j += 1) {
-            const a = topics[movableIds[i]];
-            const b = topics[movableIds[j]];
+            const a = sourceTopics[movableIds[i]];
+            const b = sourceTopics[movableIds[j]];
             const dx = b.x - a.x;
             const dy = b.y - a.y;
             const distance = Math.hypot(dx, dy) || 0.001;
@@ -1051,21 +1228,19 @@
         if (!moved) break;
       }
 
-      const ids = Object.keys(topics);
-      const avgX = ids.reduce((sum, id) => sum + topics[id].x, 0) / ids.length;
-      const avgY = ids.reduce((sum, id) => sum + topics[id].y, 0) / ids.length;
+      const ids = Object.keys(sourceTopics);
+      const avgX = ids.reduce((sum, id) => sum + sourceTopics[id].x, 0) / ids.length;
+      const avgY = ids.reduce((sum, id) => sum + sourceTopics[id].y, 0) / ids.length;
       const shiftX = 550 - avgX;
       const shiftY = 410 - avgY;
 
       ids.forEach((id) => {
-        topics[id].x = clamp(topics[id].x + shiftX, bounds.minX, bounds.maxX);
-        topics[id].y = clamp(topics[id].y + shiftY, bounds.minY, bounds.maxY);
+        sourceTopics[id].x = clamp(sourceTopics[id].x + shiftX, bounds.minX, bounds.maxX);
+        sourceTopics[id].y = clamp(sourceTopics[id].y + shiftY, bounds.minY, bounds.maxY);
       });
     }
 
     function addLink(fromId, toId) {
-      const from = topics[fromId];
-      const to = topics[toId];
       const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
       updateLinkPath(path, fromId, toId);
       path.setAttribute("class", "link");
@@ -1076,8 +1251,10 @@
     }
 
     function updateLinkPath(path, fromId, toId) {
-      const from = topics[fromId];
-      const to = topics[toId];
+      const source = getActiveTopics();
+      const from = source[fromId];
+      const to = source[toId];
+      if (!from || !to) return;
       const midX = (from.x + to.x) / 2;
       const midY = (from.y + to.y) / 2 + (from.y < to.y ? 24 : -24);
       path.setAttribute("d", `M ${from.x} ${from.y} Q ${midX} ${midY} ${to.x} ${to.y}`);
@@ -1132,7 +1309,7 @@
       });
 
       group.addEventListener("pointerdown", (event) => {
-        if (currentMode !== "ai") return;
+        if (!getModeConfig().graph) return;
         draggedNodeId = id;
         nodeDragMoved = false;
         group.setPointerCapture(event.pointerId);
@@ -1140,14 +1317,15 @@
       });
 
       group.addEventListener("pointermove", (event) => {
-        if (draggedNodeId !== id || currentMode !== "ai") return;
+        if (draggedNodeId !== id || !getModeConfig().graph) return;
         const point = svg.createSVGPoint();
         point.x = event.clientX;
         point.y = event.clientY;
         const local = point.matrixTransform(svg.getScreenCTM().inverse());
-        topics[id].x = clamp((local.x - cameraState.x) / cameraState.scale, 20, 1080);
-        topics[id].y = clamp((local.y - cameraState.y) / cameraState.scale, 20, 800);
-        group.setAttribute("transform", `translate(${topics[id].x}, ${topics[id].y})`);
+        const source = getActiveTopics();
+        source[id].x = clamp((local.x - cameraState.x) / cameraState.scale, 20, 1080);
+        source[id].y = clamp((local.y - cameraState.y) / cameraState.scale, 20, 800);
+        group.setAttribute("transform", `translate(${source[id].x}, ${source[id].y})`);
         refreshLinksForNode(id);
         nodeDragMoved = true;
       });
@@ -1180,7 +1358,7 @@
     }
 
     function buildSearchText(id) {
-      const source = currentMode === "ai" ? topics : promptTopics;
+      const source = getActiveTopics();
       const item = source[id];
       const relatedTitles = (item.related || []).map((relatedId) => source[relatedId]?.title || "").join(" ");
       return [
@@ -1203,7 +1381,7 @@
     function rankTopics(query) {
       const queryText = query.trim().toLowerCase();
       const queryTokens = tokenize(queryText);
-      const source = currentMode === "ai" ? topics : promptTopics;
+      const source = getActiveTopics();
       return Object.keys(source)
         .map((id) => {
           const item = source[id];
@@ -1226,7 +1404,8 @@
 
     function renderTopicStack(filter = "") {
       const query = filter.trim().toLowerCase();
-      const source = currentMode === "ai" ? topics : promptTopics;
+      const source = getActiveTopics();
+      const config = getModeConfig();
       const entries = Object.entries(source);
       const scored = entries
         .map(([id, item]) => {
@@ -1245,7 +1424,7 @@
       if (!scored.length) {
         const empty = document.createElement("p");
         empty.className = "search-hint";
-        empty.textContent = "No topics matched. Try a broader term like transformer, local, GPU, or context.";
+        empty.textContent = config.emptyHint;
         topicStack.appendChild(empty);
         return;
       }
@@ -1260,10 +1439,9 @@
     }
 
     function updateSearchHint(query) {
+      const config = getModeConfig();
       if (!query.trim()) {
-        searchHint.textContent = currentMode === "ai"
-          ? "Search across all topic content. For example, searching `Runpod` can bring you to the topic where it is discussed."
-          : "Search across the prompting methods by idea, workflow, or reasoning style.";
+        searchHint.textContent = config.searchHint;
         return;
       }
       if (visibleTopicIds.length) {
@@ -1282,7 +1460,7 @@
 
       const ranked = rankTopics(question);
       if (!ranked.length) {
-        askAnswer.textContent = "I could not confidently match that question yet. Try terms like local, GPU, context, transformer, model access, or tokens.";
+        askAnswer.textContent = `I could not confidently match that question yet. ${getModeConfig().emptyHint}`;
         return;
       }
 
@@ -1325,7 +1503,7 @@
 
     function selectTopic(id) {
       selectedTopicId = id;
-      const source = currentMode === "ai" ? topics : promptTopics;
+      const source = getActiveTopics();
       const item = source[id];
       detailTitle.textContent = item.title;
       detailEra.textContent = item.era;
@@ -1366,7 +1544,7 @@
         topicResources.appendChild(link);
       });
 
-      if (currentMode === "ai") {
+      if (getModeConfig().graph) {
         linkEls.forEach((link) => {
           const active = (link.dataset.from === id || link.dataset.to === id) || (item.related.includes(link.dataset.from) && link.dataset.to === id) || (item.related.includes(link.dataset.to) && link.dataset.from === id);
           link.classList.toggle("active", active);
@@ -1388,8 +1566,8 @@
         button.classList.toggle("active", buttonId === id);
       });
 
-      if (currentMode === "ai") {
-        centerOnTopic(id, id === "overview" ? 1 : 1.55);
+      if (getModeConfig().graph) {
+        centerOnTopic(id, id === getModeConfig().defaultTopic ? 1 : 1.55);
       }
     }
 
@@ -1462,8 +1640,9 @@
     }
 
     function renderTimelineForMode() {
-      const source = currentMode === "ai" ? topics : promptTopics;
-      const sourceTimeline = currentMode === "ai" ? timeline : promptTimeline;
+      const config = getModeConfig();
+      const source = config.topics;
+      const sourceTimeline = config.timeline;
       timelineNav.innerHTML = "";
       sourceTimeline.forEach((id) => {
         const button = document.createElement("button");
@@ -1473,27 +1652,56 @@
       });
     }
 
+    function renderLegend() {
+      detailLegend.innerHTML = "";
+      getModeConfig().legend.forEach((label) => {
+        const chip = document.createElement("span");
+        chip.textContent = label;
+        detailLegend.appendChild(chip);
+      });
+    }
+
+    function clearGraph() {
+      linkEls.forEach((link) => link.remove());
+      linkEls.length = 0;
+      nodeEls.forEach((el) => el.remove());
+      nodeEls.clear();
+    }
+
+    function renderGraphForMode() {
+      clearGraph();
+      if (!getModeConfig().graph) return;
+      getActiveLinks().forEach(([from, to]) => addLink(from, to));
+      Object.entries(getActiveTopics()).forEach(([id, item]) => addNode(id, item));
+    }
+
     function setMode(mode) {
       currentMode = mode;
+      const config = getModeConfig(mode);
+      document.body.dataset.mode = mode;
       tabAi.classList.toggle("active", mode === "ai");
       tabPrompting.classList.toggle("active", mode === "prompting");
-      document.title = mode === "ai" ? "AI Evolution Mindmap" : "Prompting Type Website";
-      mapShell.style.display = mode === "ai" ? "block" : "none";
+      tabRag.classList.toggle("active", mode === "rag");
+      document.title = config.titleText;
+      svg.setAttribute("aria-label", config.ariaLabel);
+      mapShell.style.display = config.graph ? "block" : "none";
       promptHub.classList.toggle("active", mode === "prompting");
-      mapPanelTitle.textContent = mode === "ai" ? "Clickable Mindmap of AI History and Ideas" : "Prompting Types and Reasoning Patterns";
-      mapPanelLead.textContent = mode === "ai"
-        ? "This map connects the early questions about machine intelligence to symbolic AI, machine learning, neural networks, transformers, and modern GPT-style models. Click any topic to see what it means and how it links to the rest."
-        : "This view collects prompting methods, reasoning patterns, workflow prompts, and formatting strategies without forcing them into the AI history map.";
-      mapInstructions.innerHTML = mode === "ai"
-        ? '<span class="tag">Click a node</span><span class="tag">Use related-topic buttons</span><span class="tag">Follow the historical flow</span>'
-        : '<span class="tag">Browse prompt patterns</span><span class="tag">Search by prompting goal</span><span class="tag">Open a method for details</span>';
-      askAnswer.textContent = mode === "ai"
-        ? 'Ask something like "how can I expand my resources when I don\'t have it locally?" and the map will suggest the closest topic.'
-        : 'Ask something like "which prompting type helps with multi-step reasoning?" and this view will point you to the best method.';
+      mapEyebrow.textContent = config.titleTag;
+      detailEyebrow.textContent = config.detailTag;
+      mapPanelTitle.textContent = config.title;
+      mapPanelLead.textContent = config.lead;
+      askInput.placeholder = config.askPlaceholder;
+      topicSearch.placeholder = config.searchPlaceholder;
+      mapInstructions.innerHTML = config.instructions.map((item) => `<span class="tag">${item}</span>`).join("");
+      askAnswer.textContent = config.askText;
+      renderGraphForMode();
+      renderLegend();
       renderTopicStack(topicSearch.value);
       updateSearchHint(topicSearch.value);
       renderTimelineForMode();
-      selectTopic(mode === "ai" ? "overview" : "system_prompting");
+      cameraState = { scale: 1, x: 0, y: 0 };
+      applyCamera();
+      selectTopic(config.defaultTopic);
     }
 
     function togglePanel(side) {
@@ -1509,9 +1717,8 @@
       }
     }
 
-    resolveTopicCollisions();
-    links.forEach(([from, to]) => addLink(from, to));
-    Object.entries(topics).forEach(([id, item]) => addNode(id, item));
+    resolveTopicCollisions(topics, "overview");
+    resolveTopicCollisions(ragTopics, "rag_overview");
     renderPromptHub();
     renderTopicStack();
     setupMapInteractions();
@@ -1532,7 +1739,7 @@
     });
     askClear.addEventListener("click", () => {
       askInput.value = "";
-      askAnswer.textContent = "Ask something like \"how can I expand my resources when I don't have it locally?\" and the map will suggest the closest topic.";
+      askAnswer.textContent = getModeConfig().askText;
     });
     toggleTheme.addEventListener("click", () => {
       const useDark = !document.body.classList.contains("dark-theme");
@@ -1545,6 +1752,7 @@
     zoomResetButton.addEventListener("click", () => selectTopic(selectedTopicId));
     tabAi.addEventListener("click", () => setMode("ai"));
     tabPrompting.addEventListener("click", () => setMode("prompting"));
+    tabRag.addEventListener("click", () => setMode("rag"));
     toggleLeft.addEventListener("click", () => togglePanel("left"));
     toggleRight.addEventListener("click", () => togglePanel("right"));
     collapseLeft.addEventListener("click", () => togglePanel("left"));
